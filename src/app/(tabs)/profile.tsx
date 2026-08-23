@@ -1,11 +1,29 @@
-import { ScrollView, View, StyleSheet, Alert, TouchableOpacity, TextInput, Platform } from 'react-native';
-import { GeistText, useTheme, GeistButton } from '../../components/GeistUI';
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  TextInput,
+  Platform,
+} from 'react-native';
+import { GeistText, useTheme } from '../../components/GeistUI';
 import { useRouter } from 'expo-router';
 import { Edit2 } from 'lucide-react-native';
+import { useUserContext } from '../../context/UserContext';
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { user } = useUserContext();
+
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+
+  const activeDisplayName = displayName !== null ? displayName : (user?.name || user?.username || '');
+  const activeEmail = email !== null ? email : (user?.email || '');
+  const initial = (activeDisplayName.trim()[0] || user?.username?.[0] || 'V').toUpperCase();
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -33,7 +51,7 @@ export default function ProfileScreen() {
           <View style={[styles.avatarSection, { borderColor: theme.border, backgroundColor: theme.surface }]}>
             <View style={{ position: 'relative', marginRight: 24, marginBottom: Platform.OS === 'web' ? 0 : 16 }}>
               <View style={styles.avatar}>
-                <GeistText weight="bold" style={{ fontSize: 32, color: '#fff' }}>M</GeistText>
+                <GeistText weight="bold" style={{ fontSize: 32, color: '#fff' }}>{initial}</GeistText>
               </View>
               <TouchableOpacity style={[styles.editAvatarBtn, { backgroundColor: theme.background, borderColor: theme.border }]}>
                 <Edit2 size={14} color={theme.text} />
@@ -52,7 +70,10 @@ export default function ProfileScreen() {
                 <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Display Name</GeistText>
                 <GeistText secondary style={{ marginBottom: 16 }}>Please enter your full name, or a display name you are comfortable with.</GeistText>
                 <TextInput 
-                  value="Mahesh Chopade"
+                  value={activeDisplayName}
+                  onChangeText={setDisplayName}
+                  placeholder="Your display name"
+                  placeholderTextColor={theme.textSecondary}
                   style={[styles.input, { borderColor: theme.border, color: theme.text }]}
                 />
               </View>
@@ -69,8 +90,12 @@ export default function ProfileScreen() {
                 <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Email Address</GeistText>
                 <GeistText secondary style={{ marginBottom: 16 }}>Please enter the email address you want to use to log in with Vercel.</GeistText>
                 <TextInput 
-                  value="maheshchopade133@gmail.com"
+                  value={activeEmail}
+                  onChangeText={setEmail}
+                  placeholder="your.email@example.com"
+                  placeholderTextColor={theme.textSecondary}
                   style={[styles.input, { borderColor: theme.border, color: theme.text }]}
+                  autoCapitalize="none"
                 />
               </View>
               <View style={[styles.formFooter, { backgroundColor: theme.surface }]}>
@@ -149,7 +174,7 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#0070F3', // Using Vercel blue as a gradient placeholder
+    backgroundColor: '#0070F3',
     alignItems: 'center',
     justifyContent: 'center',
   },

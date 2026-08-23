@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTheme } from '../../components/GeistUI';
 import { VercelHeader } from '../../components/VercelHeader';
-import { Home, PlusCircle, Activity, Settings, User } from 'lucide-react-native';
+import { Home, Activity, Settings, User } from 'lucide-react-native';
 
 export default function TabLayout() {
   const theme = useTheme();

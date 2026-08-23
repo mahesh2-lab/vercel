@@ -11,7 +11,7 @@ export default function AccountSecurityScreen() {
     <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <GeistText weight="bold" style={{ fontSize: 24 }}>Security</GeistText>
-        <GeistText secondary style={{ marginTop: 4 }}>Manage your team's security policies.</GeistText>
+        <GeistText secondary style={{ marginTop: 4 }}>{"Manage your team's security policies."}</GeistText>
       </View>
 
       <GeistCard style={{ marginBottom: 24 }}>
