@@ -1,0 +1,13 @@
+services:
+  vercel-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        EXPO_PUBLIC_VERCEL_TOKEN: ${EXPO_PUBLIC_VERCEL_TOKEN:-}
+    container_name: vercel-dashboard-app
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      - EXPO_PUBLIC_VERCEL_TOKEN=${EXPO_PUBLIC_VERCEL_TOKEN:-}
