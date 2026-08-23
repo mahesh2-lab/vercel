@@ -102,6 +102,8 @@ export function GeistButton({
   loading = false,
   style,
   textStyle,
+  prefix,
+  suffix,
 }: {
   title: string;
   onPress: () => void;
@@ -109,6 +111,8 @@ export function GeistButton({
   loading?: boolean;
   style?: ViewStyle | ViewStyle[];
   textStyle?: TextStyle | TextStyle[];
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
 }) {
   const theme = useTheme();
   
@@ -146,9 +150,15 @@ export function GeistButton({
           style={{ marginRight: 8 }} 
         />
       )}
+      {!loading && prefix && (
+        <View style={{ marginRight: 8 }}>{prefix}</View>
+      )}
       <GeistText style={[finalTextStyle, textStyle]} weight="500">
         {title}
       </GeistText>
+      {!loading && suffix && (
+        <View style={{ marginLeft: 8 }}>{suffix}</View>
+      )}
     </TouchableOpacity>
   );
 }
@@ -156,21 +166,16 @@ export function GeistButton({
 export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed' | 'Queued' | 'Installing' | 'Canceled' }) {
   const theme = useTheme();
   
-  let color = theme.textSecondary;
-  let bg = theme.surface;
+  let dotColor = theme.textSecondary;
   
   if (status === 'Ready') {
-    color = theme.success;
-    bg = theme.success + '26'; // approx 15% opacity
+    dotColor = theme.text; // Clean, neutral dot instead of blue
   } else if (status === 'Building' || status === 'Installing' || status === 'Queued') {
-    color = '#F5A623'; // Amber as specified
-    bg = '#F5A62326';
+    dotColor = '#F5A623'; // Amber
   } else if (status === 'Failed') {
-    color = theme.error;
-    bg = theme.error + '26';
+    dotColor = theme.error;
   } else if (status === 'Canceled') {
-    color = theme.textSecondary;
-    bg = theme.surface;
+    dotColor = theme.textSecondary;
   }
 
   return (
@@ -178,8 +183,10 @@ export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: bg,
-        borderRadius: 4,
+        backgroundColor: 'transparent',
+        borderColor: theme.border,
+        borderWidth: 1,
+        borderRadius: 999,
         paddingHorizontal: 8,
         paddingVertical: 4,
       }}
@@ -189,11 +196,11 @@ export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed
           width: 8,
           height: 8,
           borderRadius: 4,
-          backgroundColor: color,
+          backgroundColor: dotColor,
           marginRight: 6,
         }}
       />
-      <GeistText style={{ color: color, fontSize: 12, fontWeight: '500' }}>
+      <GeistText style={{ color: theme.text, fontSize: 12, fontWeight: '500' }}>
         {status}
       </GeistText>
     </View>

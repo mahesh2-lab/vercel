@@ -100,16 +100,19 @@ const DeploymentCardItem = memo(
               style={[
                 styles.envPill,
                 {
-                  backgroundColor: isProduction ? theme.success + '1A' : theme.surface,
-                  borderColor: isProduction ? theme.success + '40' : theme.border,
+                  backgroundColor: isProduction ? theme.text : theme.surface,
+                  borderColor: isProduction ? theme.text : theme.border,
                   marginLeft: 8,
+                  paddingHorizontal: 6,
+                  paddingVertical: 2,
+                  borderRadius: 999,
                 },
               ]}
             >
               <GeistText
                 style={{
                   fontSize: 10,
-                  color: isProduction ? theme.success : theme.textSecondary,
+                  color: isProduction ? theme.background : theme.textSecondary,
                   fontWeight: '600',
                   textTransform: 'capitalize',
                 }}
@@ -163,16 +166,16 @@ const DeploymentCardItem = memo(
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <GitCommit size={13} color={theme.textSecondary} style={{ marginRight: 4 }} />
-              <GeistText mono secondary style={{ fontSize: 12 }}>
+              <GitCommit size={14} color={theme.textSecondary} style={{ marginRight: 4 }} />
+              <GeistText mono secondary style={{ fontSize: 13 }}>
                 {dep.meta?.githubCommitRef || 'main'}
               </GeistText>
             </View>
 
             {dep.meta?.githubCommitAuthorName && (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <User size={13} color={theme.textSecondary} style={{ marginRight: 4 }} />
-                <GeistText secondary style={{ fontSize: 12 }}>
+                <User size={14} color={theme.textSecondary} style={{ marginRight: 4 }} />
+                <GeistText secondary style={{ fontSize: 13 }}>
                   {dep.meta.githubCommitAuthorName}
                 </GeistText>
               </View>
@@ -198,6 +201,11 @@ export default function ActivityScreen() {
   const [deployments, setDeployments] = useState<ActivityDeployment[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const paginationNextRef = React.useRef<string | undefined>(undefined);
+  const loadingMoreRef = React.useRef(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>('ALL');
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
@@ -223,21 +231,43 @@ export default function ActivityScreen() {
     setToast({ visible: true, message, type });
   }, []);
 
-  const fetchDeployments = useCallback(async (isPull = false) => {
-    if (isPull) setRefreshing(true);
+  const fetchDeployments = useCallback(async (isPull = false, loadMore = false) => {
+    if (loadMore) {
+      if (loadingMoreRef.current || !hasMore) return;
+      loadingMoreRef.current = true;
+      setLoadingMore(true);
+    } else {
+      paginationNextRef.current = undefined;
+      if (isPull) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setHasMore(true);
+    }
+
     const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
 
     if (!token) {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
+      loadingMoreRef.current = false;
       return;
     }
 
     try {
       const teamId = activeScope?.type === 'team' ? activeScope.id : undefined;
+
+      const until =
+        loadMore && paginationNextRef.current
+          ? Number(paginationNextRef.current)
+          : undefined;
+
       const result = await vercel.deployments.getDeployments({
-        limit: 100,
+        limit: 15,
         teamId,
+        ...(until ? { until } : {}),
       });
 
       const list = (result as any)?.deployments || (result as any)?.object?.deployments || result || [];
@@ -294,8 +324,34 @@ export default function ActivityScreen() {
         };
       });
 
-      setDeployments(formatted);
-      if (isPull) {
+      const newPagination =
+        (result as any)?.pagination ||
+        (result as any)?.object?.pagination ||
+        (result as any)?.result?.pagination;
+
+      if (loadMore) {
+        setDeployments((prev) => {
+          const existingIds = new Set(prev.map((d) => d.id));
+          const uniqueList = formatted.filter((d: any) => !existingIds.has(d.id));
+          return [...prev, ...uniqueList];
+        });
+      } else {
+        setDeployments(formatted);
+      }
+
+      // Prevent infinite loop if API returns the same cursor or no cursor
+      if (
+        !newPagination?.next ||
+        (loadMore && paginationNextRef.current === String(newPagination?.next))
+      ) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+
+      paginationNextRef.current = String(newPagination?.next);
+
+      if (isPull && !loadMore) {
         showToast('Activity refreshed', 'success');
       }
     } catch (err: any) {
@@ -304,8 +360,10 @@ export default function ActivityScreen() {
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMore(false);
+      loadingMoreRef.current = false;
     }
-  }, [activeScope, showToast]);
+  }, [activeScope, showToast, hasMore]);
 
   useEffect(() => {
     let isMounted = true;
@@ -611,24 +669,6 @@ export default function ActivityScreen() {
           </GeistText>
         </View>
 
-        <TouchableOpacity
-          style={[
-            styles.refreshButton,
-            {
-              borderColor: theme.border,
-              backgroundColor: theme.surface,
-            },
-          ]}
-          onPress={handleManualRefresh}
-          activeOpacity={0.7}
-          disabled={loading || refreshing}
-        >
-          {refreshing ? (
-            <ActivityIndicator size="small" color={theme.text} />
-          ) : (
-            <RefreshCw size={16} color={theme.text} />
-          )}
-        </TouchableOpacity>
       </View>
 
       {/* Side-by-Side Controls: Search Bar + Project Dropdown Filter */}
@@ -742,6 +782,19 @@ export default function ActivityScreen() {
             </View>
           )
         }
+        onEndReached={() => {
+          if (!loading && !refreshing && hasMore && !loadingMoreRef.current) {
+            fetchDeployments(false, true);
+          }
+        }}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <ActivityIndicator size="small" color={theme.text} />
+            </View>
+          ) : null
+        }
       />
 
       {/* Project Selector Dropdown Modal */}
@@ -835,41 +888,27 @@ export default function ActivityScreen() {
           <View style={[styles.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
             {/* Modal Header */}
             <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
-              <View style={{ flex: 1, marginRight: 8 }}>
+              <View style={{ flex: 1, marginRight: 16 }}>
                 <GeistText weight="bold" style={{ fontSize: 16 }}>
                   {activeMenuDeployment?.name}
                 </GeistText>
-                <GeistText mono secondary style={{ fontSize: 12, marginTop: 2 }}>
-                  {activeMenuDeployment?.uid?.substring(0, 7)} · {activeMenuDeployment?.url}
-                </GeistText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                  <GeistText mono secondary style={{ fontSize: 12, flexShrink: 0 }}>
+                    {activeMenuDeployment?.uid?.substring(0, 7)} ·{' '}
+                  </GeistText>
+                  <GeistText mono secondary numberOfLines={1} ellipsizeMode="middle" style={{ fontSize: 12, flexShrink: 1 }}>
+                    {activeMenuDeployment?.url}
+                  </GeistText>
+                </View>
               </View>
-              <TouchableOpacity onPress={() => setActionMenuOpen(false)}>
+              <TouchableOpacity onPress={() => setActionMenuOpen(false)} style={{ paddingTop: 2 }}>
                 <X size={18} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
 
             {/* Action Items List */}
             <View style={{ paddingVertical: 8 }}>
-              {/* 1. Promote to Production */}
-              {activeMenuDeployment?.target !== 'production' && (
-                <TouchableOpacity
-                  style={styles.menuActionItem}
-                  onPress={handlePromote}
-                  activeOpacity={0.7}
-                >
-                  <Rocket size={18} color="#0070F3" style={{ marginRight: 14 }} />
-                  <View style={{ flex: 1 }}>
-                    <GeistText weight="600" style={{ color: '#0070F3', fontSize: 14 }}>
-                      Promote to Production
-                    </GeistText>
-                    <GeistText secondary style={{ fontSize: 12 }}>
-                      Assign production root domains to this preview
-                    </GeistText>
-                  </View>
-                </TouchableOpacity>
-              )}
-
-              {/* 2. Redeploy */}
+              {/* 1. Redeploy */}
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={() => {
@@ -889,29 +928,7 @@ export default function ActivityScreen() {
                 </View>
               </TouchableOpacity>
 
-              {/* 3. View Build Logs */}
-              <TouchableOpacity
-                style={styles.menuActionItem}
-                onPress={() => {
-                  setActionMenuOpen(false);
-                  if (activeMenuDeployment) {
-                    router.push(`/deployment/${activeMenuDeployment.uid}/logs`);
-                  }
-                }}
-                activeOpacity={0.7}
-              >
-                <Terminal size={18} color={theme.text} style={{ marginRight: 14 }} />
-                <View style={{ flex: 1 }}>
-                  <GeistText weight="500" style={{ fontSize: 14 }}>
-                    View Build Logs
-                  </GeistText>
-                  <GeistText secondary style={{ fontSize: 12 }}>
-                    Terminal build stream and diagnostics
-                  </GeistText>
-                </View>
-              </TouchableOpacity>
-
-              {/* 4. View Deployment Timeline */}
+              {/* 2. View Deployment Timeline */}
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={() => {
@@ -933,24 +950,7 @@ export default function ActivityScreen() {
                 </View>
               </TouchableOpacity>
 
-              {/* 5. Copy URL */}
-              <TouchableOpacity
-                style={styles.menuActionItem}
-                onPress={handleCopyUrl}
-                activeOpacity={0.7}
-              >
-                <Copy size={18} color={theme.text} style={{ marginRight: 14 }} />
-                <View style={{ flex: 1 }}>
-                  <GeistText weight="500" style={{ fontSize: 14 }}>
-                    Copy Deployment URL
-                  </GeistText>
-                  <GeistText secondary style={{ fontSize: 12 }}>
-                    Copy full HTTPS link to clipboard
-                  </GeistText>
-                </View>
-              </TouchableOpacity>
-
-              {/* 6. Visit Live */}
+              {/* 3. Visit Live */}
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={handleVisit}
@@ -966,27 +966,7 @@ export default function ActivityScreen() {
                   </GeistText>
                 </View>
               </TouchableOpacity>
-
-              {/* 7. Rollback (if production) */}
-              {activeMenuDeployment?.target === 'production' && (
-                <TouchableOpacity
-                  style={styles.menuActionItem}
-                  onPress={handleRollback}
-                  activeOpacity={0.7}
-                >
-                  <RotateCcw size={18} color={theme.text} style={{ marginRight: 14 }} />
-                  <View style={{ flex: 1 }}>
-                    <GeistText weight="500" style={{ fontSize: 14 }}>
-                      Rollback Production Traffic
-                    </GeistText>
-                    <GeistText secondary style={{ fontSize: 12 }}>
-                      Restore live production traffic to this build
-                    </GeistText>
-                  </View>
-                </TouchableOpacity>
-              )}
-
-              {/* 8. Cancel Deployment (if building) */}
+              {/* 4. Cancel Deployment (if building) */}
               {activeMenuDeployment?.computedStatus === 'Building' && (
                 <TouchableOpacity
                   style={styles.menuActionItem}
@@ -1272,7 +1252,7 @@ const styles = StyleSheet.create({
   },
   modalHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,

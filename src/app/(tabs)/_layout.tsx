@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { useTheme } from '../../components/GeistUI';
 import { VercelHeader } from '../../components/VercelHeader';
-import { Home, Activity, Settings, User } from 'lucide-react-native';
+import { Home, Activity, Settings, User, Search } from 'lucide-react-native';
 
 export default function TabLayout() {
   const theme = useTheme();
@@ -43,11 +43,18 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="search"
+        options={{
+          title: 'Search',
+          tabBarLabel: 'Search',
+          tabBarIcon: ({ color, size }) => <Search color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
+          href: null,
           title: 'Account Settings',
-          tabBarLabel: 'Settings',
-          tabBarIcon: ({ color, size }) => <Settings color={color} size={size} />,
         }}
       />
       <Tabs.Screen

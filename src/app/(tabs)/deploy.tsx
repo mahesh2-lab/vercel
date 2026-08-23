@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ScrollView,
   View,
@@ -33,6 +33,8 @@ import {
   Sparkles,
   Check,
   X,
+  CrossIcon,
+  Cross,
 } from 'lucide-react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -138,6 +140,11 @@ export default function DeployScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  const [repoPage, setRepoPage] = useState(1);
+  const [hasMoreRepos, setHasMoreRepos] = useState(true);
+  const [loadingMoreRepos, setLoadingMoreRepos] = useState(false);
+  const loadingMoreReposRef = useRef(false);
 
   // Step 2 configuration state
   const [selectedRepo, setSelectedRepo] = useState<GitRepository | null>(null);
@@ -192,52 +199,46 @@ export default function DeployScreen() {
     return `${Math.floor(diff / 604800)}w ago`;
   };
 
-  // Fetch repositories from Vercel / GitHub
-  const fetchRepositories = useCallback(async () => {
+  // Fetch repositories from GitHub / Vercel
+  const fetchRepositories = useCallback(async (isPullToRefresh = false, loadMore = false, query = '') => {
+    if (loadMore) {
+      if (loadingMoreReposRef.current || !hasMoreRepos) return;
+      loadingMoreReposRef.current = true;
+      setLoadingMoreRepos(true);
+    } else {
+      if (isPullToRefresh) setRefreshing(true);
+      else setLoading(true);
+      setHasMoreRepos(true);
+    }
+
     const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
     const username = user?.username;
 
     let loadedRepos: GitRepository[] = [];
+    const targetPage = loadMore ? repoPage + 1 : 1;
+    const perPage = 10;
 
     try {
-      if (token) {
+      if (username) {
         try {
-          const vercelGitRes = await fetch('https://api.vercel.com/v1/integrations/git-repositories', {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (vercelGitRes.ok) {
-            const gitData = await vercelGitRes.json();
-            const list = gitData.repositories || gitData || [];
-            if (Array.isArray(list) && list.length > 0) {
-              loadedRepos = list.map((r: any) => ({
-                id: String(r.id),
-                name: r.name,
-                fullName: r.full_name || r.fullName || r.name,
-                private: Boolean(r.private),
-                updated: formatTimeAgo(r.updated_at || r.updatedAt || r.pushed_at),
-                defaultBranch: r.default_branch || r.defaultBranch || 'main',
-                language: r.language,
-                description: r.description,
-                url: r.html_url || r.url,
-              }));
-            }
+          const trimmedQuery = query.trim();
+          let endpoint = '';
+          
+          if (trimmedQuery) {
+            // Search API
+            endpoint = `https://api.github.com/search/repositories?q=${encodeURIComponent(trimmedQuery)}+user:${username}&sort=updated&per_page=${perPage}&page=${targetPage}`;
+          } else {
+            // User Repos API
+            endpoint = `https://api.github.com/users/${username}/repos?sort=updated&per_page=${perPage}&page=${targetPage}`;
           }
-        } catch (vErr) {
-          console.warn('Vercel git repositories fetch failed:', vErr);
-        }
-      }
 
-      if (loadedRepos.length === 0 && username) {
-        try {
-          const ghRes = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=50`);
+          const ghRes = await fetch(endpoint);
           if (ghRes.ok) {
             const ghData = await ghRes.json();
-            if (Array.isArray(ghData) && ghData.length > 0) {
-              loadedRepos = ghData.map((r: any) => ({
+            const list = trimmedQuery ? ghData.items : ghData;
+            
+            if (Array.isArray(list)) {
+              loadedRepos = list.map((r: any) => ({
                 id: String(r.id),
                 name: r.name,
                 fullName: r.full_name,
@@ -255,42 +256,55 @@ export default function DeployScreen() {
         }
       }
 
-      if (loadedRepos.length === 0) {
-        loadedRepos = [
-          { id: '1', name: 'portfolio-v2', fullName: 'user/portfolio-v2', private: false, updated: '2d ago', defaultBranch: 'main', language: 'TypeScript' },
-          { id: '2', name: 'ecommerce-platform', fullName: 'user/ecommerce-platform', private: true, updated: '1w ago', defaultBranch: 'main', language: 'JavaScript' },
-          { id: '3', name: 'marketing-website', fullName: 'user/marketing-website', private: false, updated: 'Just now', defaultBranch: 'main', language: 'HTML' },
-        ];
+      // If loadMore, append. Else, replace.
+      if (loadMore) {
+        setRepos(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const uniqueList = loadedRepos.filter(p => !existingIds.has(p.id));
+          return [...prev, ...uniqueList];
+        });
+        setRepoPage(targetPage);
+      } else {
+        setRepos(loadedRepos);
+        setRepoPage(1);
       }
 
-      setRepos(loadedRepos);
+      if (loadedRepos.length < perPage) {
+        setHasMoreRepos(false);
+      } else {
+        setHasMoreRepos(true);
+      }
+
     } catch (err) {
       console.error('Error fetching repositories:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setLoadingMoreRepos(false);
+      loadingMoreReposRef.current = false;
     }
-  }, [user?.username]);
+  }, [user?.username, repoPage, hasMoreRepos]);
 
+  // Debounced Search Effect
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadData() {
-      await fetchRepositories();
-    }
-
-    if (isMounted) {
-      loadData();
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchRepositories]);
+    const timer = setTimeout(() => {
+      // Re-fetch when searchQuery changes (pass false for isPullToRefresh and loadMore)
+      fetchRepositories(false, false, searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]); // Note: removing fetchRepositories from dependencies here to prevent loops on page change
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchRepositories();
+    fetchRepositories(true, false, searchQuery);
+  };
+
+  const handleScroll = (event: any) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 400;
+    
+    if (isCloseToBottom && !loading && !loadingMoreReposRef.current && hasMoreRepos) {
+      fetchRepositories(false, true, searchQuery);
+    }
   };
 
   const filteredRepos = useMemo(() => {
@@ -689,6 +703,8 @@ export default function DeployScreen() {
               tintColor={theme.text}
             />
           }
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         >
           <View style={styles.header}>
             <GeistText weight="bold" style={{ fontSize: 28, marginBottom: 8 }}>
@@ -737,8 +753,8 @@ export default function DeployScreen() {
                   }}
                 />
               </View>
-              <TouchableOpacity onPress={onRefresh} style={{ padding: 4 }}>
-                <RefreshCw size={16} color={theme.textSecondary} />
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
+                <X size={16} color={theme.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -750,7 +766,7 @@ export default function DeployScreen() {
                   Fetching repositories...
                 </GeistText>
               </View>
-            ) : filteredRepos.length === 0 ? (
+            ) : repos.length === 0 ? (
               <View style={{ padding: 48, alignItems: 'center', justifyContent: 'center' }}>
                 <GeistText secondary style={{ fontSize: 14 }}>
                   {searchQuery ? `No repositories match "${searchQuery}"` : 'No repositories found.'}
@@ -758,11 +774,11 @@ export default function DeployScreen() {
               </View>
             ) : (
               <View>
-                {filteredRepos.map((repo, index) => (
+                {repos.map((repo, idx) => (
                   <View
                     key={repo.id}
                     style={{
-                      borderBottomWidth: index === filteredRepos.length - 1 ? 0 : 1,
+                      borderBottomWidth: idx === repos.length - 1 ? 0 : 1,
                       borderBottomColor: theme.border,
                     }}
                   >
@@ -809,6 +825,12 @@ export default function DeployScreen() {
                     </TouchableOpacity>
                   </View>
                 ))}
+                
+                {loadingMoreRepos && (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={theme.text} />
+                  </View>
+                )}
               </View>
             )}
           </GeistCard>

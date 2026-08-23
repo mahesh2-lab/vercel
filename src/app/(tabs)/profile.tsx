@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { GeistText, useTheme } from '../../components/GeistUI';
 import { useRouter } from 'expo-router';
-import { Edit2 } from 'lucide-react-native';
+import { Edit2, Settings } from 'lucide-react-native';
 import { useUserContext } from '../../context/UserContext';
 
 export default function ProfileScreen() {
@@ -41,9 +41,28 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <GeistText weight="bold" style={{ fontSize: 24, marginBottom: 4 }}>Profile Settings</GeistText>
-        <GeistText secondary>Manage your account settings and personal information.</GeistText>
+      <View style={[styles.header, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+        <View style={{ flex: 1, paddingRight: 16 }}>
+          <GeistText weight="bold" style={{ fontSize: 24, marginBottom: 4 }}>Profile Settings</GeistText>
+          <GeistText secondary>Manage your account settings and personal information.</GeistText>
+        </View>
+        <TouchableOpacity
+          style={[
+            { 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              borderWidth: 1, 
+              paddingHorizontal: 12, 
+              paddingVertical: 8, 
+              borderRadius: 6 
+            }, 
+            { borderColor: theme.border, backgroundColor: theme.surface }
+          ]}
+          onPress={() => router.push('/settings')}
+        >
+          <Settings size={16} color={theme.text} style={{ marginRight: 8 }} />
+          <GeistText weight="500" style={{ fontSize: 13 }}>App Settings</GeistText>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.grid}>

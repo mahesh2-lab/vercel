@@ -755,10 +755,10 @@ export default function DeploymentScreen() {
 
       {/* Promote to Production Banner for Previews */}
       {!isFailed && deployment?.target !== 'production' && (
-        <GeistCard style={[styles.promoteCard, { borderColor: '#0070F3', backgroundColor: '#0070F312' }]}>
+        <GeistCard style={[styles.promoteCard, { borderColor: theme.border, backgroundColor: theme.surface }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-              <Sparkles size={20} color="#0070F3" />
+              <Rocket size={18} color={theme.text} />
               <View style={{ flex: 1 }}>
                 <GeistText weight="600" style={{ fontSize: 15 }}>
                   Promote to Production
@@ -769,20 +769,17 @@ export default function DeploymentScreen() {
               </View>
             </View>
             <TouchableOpacity
-              style={[styles.promoteBtn, { backgroundColor: '#0070F3' }]}
+              style={[styles.promoteBtn, { backgroundColor: theme.text }]}
               activeOpacity={0.7}
               onPress={handlePromoteToProduction}
               disabled={promoting}
             >
               {promoting ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={theme.background} />
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Rocket size={14} color="#fff" />
-                  <GeistText weight="600" style={{ color: '#fff', fontSize: 13 }}>
-                    Promote
-                  </GeistText>
-                </View>
+                <GeistText weight="600" style={{ color: theme.background, fontSize: 13 }}>
+                  Promote
+                </GeistText>
               )}
             </TouchableOpacity>
           </View>
@@ -791,55 +788,46 @@ export default function DeploymentScreen() {
 
       {/* Live Public Website Banner (Anonymous Access) */}
       {isReady && domainInfo.primaryPublicDomain ? (
-        <View
-          style={[
-            styles.livePublicBanner,
-            {
-              backgroundColor: theme.surface,
-              borderColor: '#0070F3',
-            },
-          ]}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, marginRight: 10 }}>
-            <View style={[styles.liveDot, { backgroundColor: theme.success }]} />
+        <GeistCard style={{ marginBottom: 24, padding: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
             <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <GeistText weight="bold" style={{ fontSize: 13, color: '#0070F3' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <GeistText weight="600" style={{ fontSize: 12, color: theme.textSecondary }}>
                   PUBLIC LIVE DOMAIN
                 </GeistText>
-                <View style={{ backgroundColor: theme.success + '20', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
-                  <GeistText style={{ fontSize: 10, color: theme.success, fontWeight: '700' }}>
-                    ANONYMOUS ACCESS
+                <View style={{ backgroundColor: theme.border, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 }}>
+                  <GeistText style={{ fontSize: 10, color: theme.text, fontWeight: '600' }}>
+                    ANONYMOUS
                   </GeistText>
                 </View>
               </View>
-              <GeistText mono weight="bold" numberOfLines={1} style={{ fontSize: 14, color: theme.text }}>
+              <GeistText mono weight="bold" numberOfLines={1} style={{ fontSize: 15, color: theme.text }}>
                 https://{domainInfo.primaryPublicDomain}
               </GeistText>
             </View>
-          </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity
-              onPress={handleCopyUrl}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={[styles.smallActionBtn, { borderColor: theme.border, backgroundColor: theme.card }]}
-            >
-              <Copy size={13} color={theme.text} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <TouchableOpacity
+                onPress={handleCopyUrl}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={[styles.smallActionBtn, { borderColor: theme.border, backgroundColor: theme.card, height: 32, paddingHorizontal: 10, justifyContent: 'center' }]}
+              >
+                <Copy size={14} color={theme.text} />
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => handleVisit(domainInfo.primaryPublicDomain)}
-              activeOpacity={0.7}
-              style={[styles.visitLiveBtn, { backgroundColor: '#0070F3' }]}
-            >
-              <GeistText weight="600" style={{ color: '#fff', fontSize: 13 }}>
-                Visit Site
-              </GeistText>
-              <ExternalLink size={13} color="#fff" style={{ marginLeft: 4 }} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleVisit(domainInfo.primaryPublicDomain)}
+                activeOpacity={0.7}
+                style={[styles.visitLiveBtn, { backgroundColor: theme.text, height: 32, paddingHorizontal: 14, justifyContent: 'center' }]}
+              >
+                <GeistText weight="600" style={{ color: theme.background, fontSize: 13 }}>
+                  Visit Site
+                </GeistText>
+                <ExternalLink size={14} color={theme.background} style={{ marginLeft: 6 }} />
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </GeistCard>
       ) : null}
 
       {/* Live Build Progress Card */}
@@ -869,15 +857,15 @@ export default function DeploymentScreen() {
             </View>
           ) : !isDone ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <ActivityIndicator size="small" color="#0070F3" />
-              <GeistText mono style={{ fontSize: 12, color: '#0070F3' }}>
+              <ActivityIndicator size="small" color={theme.textSecondary} />
+              <GeistText mono style={{ fontSize: 12, color: theme.textSecondary }}>
                 Building...
               </GeistText>
             </View>
           ) : (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <CheckCircle2 size={15} color={theme.success} />
-              <GeistText mono style={{ fontSize: 12, color: theme.success }}>
+              <CheckCircle2 size={15} color={theme.textSecondary} />
+              <GeistText mono style={{ fontSize: 12, color: theme.textSecondary }}>
                 Completed
               </GeistText>
             </View>
@@ -888,15 +876,15 @@ export default function DeploymentScreen() {
           {/* Step 0: Setup */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {progressStep > 0 ? (
-              <CheckCircle2 color={theme.success} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : isFailed ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : (
-              <ActivityIndicator size="small" color="#0070F3" style={[styles.icon, { backgroundColor: theme.card }]} />
+              <ActivityIndicator size="small" color={theme.textSecondary} style={[styles.icon, { backgroundColor: theme.card }]} />
             )}
             <View style={styles.timelineContent}>
               <View style={styles.timelineRow}>
-                <GeistText weight={progressStep === 0 ? '600' : 'normal'}>System Setup & Configuration</GeistText>
+                <GeistText weight={progressStep === 0 ? '600' : 'normal'} style={progressStep === 0 ? { color: theme.text } : { color: theme.textSecondary }}>System Setup & Configuration</GeistText>
                 {progressStep > 0 && <GeistText secondary mono style={{ fontSize: 12 }}>1s</GeistText>}
               </View>
             </View>
@@ -905,17 +893,17 @@ export default function DeploymentScreen() {
           {/* Step 1: Cloning */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {progressStep > 1 ? (
-              <CheckCircle2 color={theme.success} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : progressStep === 1 && !isFailed ? (
-              <ActivityIndicator size="small" color="#0070F3" style={[styles.icon, { backgroundColor: theme.card }]} />
+              <ActivityIndicator size="small" color={theme.textSecondary} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : isFailed && progressStep === 1 ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : (
-              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
             )}
-            <View style={[styles.timelineContent, progressStep < 1 && { opacity: 0.4 }]}>
+            <View style={[styles.timelineContent, progressStep < 1 && { opacity: 0.5 }]}>
               <View style={styles.timelineRow}>
-                <GeistText weight={progressStep === 1 ? '600' : 'normal'}>Cloning Repository</GeistText>
+                <GeistText weight={progressStep === 1 ? '600' : 'normal'} style={progressStep === 1 ? { color: theme.text } : { color: theme.textSecondary }}>Cloning Repository</GeistText>
                 {progressStep > 1 && <GeistText secondary mono style={{ fontSize: 12 }}>2s</GeistText>}
               </View>
             </View>
@@ -926,15 +914,15 @@ export default function DeploymentScreen() {
             {isFailed ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : progressStep > 2 ? (
-              <CheckCircle2 color={theme.success} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : progressStep === 2 ? (
-              <ActivityIndicator size="small" color="#0070F3" style={[styles.icon, { backgroundColor: theme.card }]} />
+              <ActivityIndicator size="small" color={theme.textSecondary} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : (
-              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
             )}
-            <View style={[styles.timelineContent, progressStep < 2 && !isFailed && { opacity: 0.4 }]}>
+            <View style={[styles.timelineContent, progressStep < 2 && !isFailed && { opacity: 0.5 }]}>
               <View style={styles.timelineRow}>
-                <GeistText weight={progressStep === 2 ? '600' : 'normal'} style={isFailed ? { color: theme.error } : undefined}>
+                <GeistText weight={progressStep === 2 ? '600' : 'normal'} style={isFailed ? { color: theme.error } : progressStep === 2 ? { color: theme.text } : { color: theme.textSecondary }}>
                   {isFailed ? 'Building & Optimization (Failed)' : 'Building & Optimization'}
                 </GeistText>
                 {isFailed ? (
@@ -949,17 +937,17 @@ export default function DeploymentScreen() {
           {/* Step 3: Assigning Domains */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {isFailed ? (
-              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
             ) : progressStep > 3 ? (
-              <CheckCircle2 color={theme.success} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : progressStep === 3 ? (
-              <ActivityIndicator size="small" color="#0070F3" style={[styles.icon, { backgroundColor: theme.card }]} />
+              <ActivityIndicator size="small" color={theme.textSecondary} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : (
-              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
             )}
-            <View style={[styles.timelineContent, (progressStep < 3 || isFailed) && { opacity: 0.4 }]}>
+            <View style={[styles.timelineContent, (progressStep < 3 || isFailed) && { opacity: 0.5 }]}>
               <View style={styles.timelineRow}>
-                <GeistText weight={progressStep === 3 ? '600' : 'normal'}>Assigning Domains & SSL</GeistText>
+                <GeistText weight={progressStep === 3 ? '600' : 'normal'} style={progressStep === 3 ? { color: theme.text } : { color: theme.textSecondary }}>Assigning Domains & SSL</GeistText>
                 {progressStep > 3 && !isFailed && <GeistText secondary mono style={{ fontSize: 12 }}>1s</GeistText>}
               </View>
             </View>
@@ -970,38 +958,42 @@ export default function DeploymentScreen() {
             {isFailed ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : progressStep >= 4 ? (
-              <CheckCircle2 color={theme.success} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <CheckCircle2 color={theme.text} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
             ) : (
-              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
+              <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
             )}
-            <View style={[styles.timelineContent, (progressStep < 4 || isFailed) && { opacity: 0.4 }]}>
+            <View style={[styles.timelineContent, (progressStep < 4 || isFailed) && { opacity: 0.5 }]}>
               <View style={styles.timelineRow}>
-                <GeistText weight={isReady ? '600' : 'normal'} style={isFailed ? { color: theme.error } : undefined}>
+                <GeistText weight={isReady ? '600' : 'normal'} style={isFailed ? { color: theme.error } : isReady ? { color: theme.text } : { color: theme.textSecondary }}>
                   {isFailed ? 'Deployment Failed' : 'Deployment Live & Ready'}
                 </GeistText>
                 {isReady && <GeistText secondary mono style={{ fontSize: 12 }}>Active</GeistText>}
                 {isFailed && <GeistText mono style={{ fontSize: 12, color: theme.error }}>Error</GeistText>}
               </View>
-              <View style={styles.infoRow}>
-                <GeistText secondary style={styles.infoLabel}>Framework</GeistText>
-                <GeistText style={[styles.infoValue, { textTransform: 'capitalize' }]}>{(deployment as any)?.project?.framework || 'N/A'}</GeistText>
-              </View>
-              <View style={styles.infoRow}>
-                <GeistText secondary style={styles.infoLabel}>Created By</GeistText>
-                <GeistText style={styles.infoValue}>{(deployment as any)?.creator?.username || (deployment as any)?.meta?.githubCommitAuthorName || 'Unknown'}</GeistText>
-              </View>
-              <View style={styles.infoRow}>
-                <GeistText secondary style={styles.infoLabel}>Created</GeistText>
-                <GeistText style={styles.infoValue}>{deployment?.createdAt ? new Date(deployment.createdAt).toLocaleString() : 'N/A'}</GeistText>
-              </View>
-              <View style={styles.infoRow}>
-                <GeistText secondary style={styles.infoLabel}>Branch</GeistText>
-                <GeistText style={styles.infoValue}>{deployment?.meta?.githubCommitRef || 'main'}</GeistText>
-              </View>
-              <View style={styles.infoRow}>
-                <GeistText secondary style={styles.infoLabel}>Commit Message</GeistText>
-                <GeistText style={styles.infoValue}>{deployment?.meta?.githubCommitMessage || 'N/A'}</GeistText>
-              </View>
+              {isReady && (
+                <View style={{ marginTop: 12, gap: 8 }}>
+                  <View style={styles.infoRow}>
+                    <GeistText secondary style={styles.infoLabel}>Framework</GeistText>
+                    <GeistText style={[styles.infoValue, { textTransform: 'capitalize' }]}>{(deployment as any)?.project?.framework || 'N/A'}</GeistText>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <GeistText secondary style={styles.infoLabel}>Created By</GeistText>
+                    <GeistText style={styles.infoValue}>{(deployment as any)?.creator?.username || (deployment as any)?.meta?.githubCommitAuthorName || 'Unknown'}</GeistText>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <GeistText secondary style={styles.infoLabel}>Created</GeistText>
+                    <GeistText style={styles.infoValue}>{deployment?.createdAt ? new Date(deployment.createdAt).toLocaleString() : 'N/A'}</GeistText>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <GeistText secondary style={styles.infoLabel}>Branch</GeistText>
+                    <GeistText style={styles.infoValue}>{deployment?.meta?.githubCommitRef || 'main'}</GeistText>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <GeistText secondary style={styles.infoLabel}>Commit Message</GeistText>
+                    <GeistText style={styles.infoValue} numberOfLines={2}>{deployment?.meta?.githubCommitMessage || 'N/A'}</GeistText>
+                  </View>
+                </View>
+              )}
             </View>
           </View>
         </View>
@@ -1053,16 +1045,21 @@ export default function DeploymentScreen() {
 
           <View style={styles.metaRow}>
             <GeistText secondary style={styles.metaLabel}>Deployment</GeistText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'flex-end', flexWrap: 'wrap', gap: 6 }}>
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 8 }}>
               <TouchableOpacity
                 onPress={() => handleVisit(domainInfo.deploymentUrl)}
                 activeOpacity={0.7}
-                style={{ flexDirection: 'row', alignItems: 'center' }}
+                style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}
               >
-                <GeistText mono style={{ color: isFailed ? theme.textSecondary : '#0070F3', fontSize: 13, marginRight: 6 }}>
+                <GeistText 
+                  mono 
+                  numberOfLines={1} 
+                  ellipsizeMode="middle"
+                  style={{ color: theme.text, fontSize: 13, marginRight: 6, textAlign: 'right', flexShrink: 1 }}
+                >
                   {domainInfo.deploymentUrl}
                 </GeistText>
-                <ExternalLink size={13} color={isFailed ? theme.textSecondary : '#0070F3'} />
+                <ExternalLink size={13} color={theme.textSecondary} style={{ flexShrink: 0 }} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={async () => {
@@ -1070,7 +1067,7 @@ export default function DeploymentScreen() {
                   showToast('Deployment URL copied to clipboard');
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                style={{ padding: 4 }}
+                style={{ paddingTop: 3 }}
               >
                 <Copy size={13} color={theme.textSecondary} />
               </TouchableOpacity>
@@ -1102,8 +1099,8 @@ export default function DeploymentScreen() {
                         borderColor: theme.border,
                         borderWidth: 1,
                         borderRadius: 6,
-                        paddingHorizontal: 10,
-                        paddingVertical: 7,
+                        paddingHorizontal: 12,
+                        paddingVertical: 10,
                       }}
                     >
                       <TouchableOpacity
@@ -1111,11 +1108,11 @@ export default function DeploymentScreen() {
                         activeOpacity={0.7}
                         style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 8 }}
                       >
-                        <Globe size={13} color="#0070F3" style={{ marginRight: 6 }} />
-                        <GeistText mono numberOfLines={1} style={{ fontSize: 13, color: '#0070F3', flex: 1, fontWeight: '500' }}>
+                        <Globe size={13} color={theme.textSecondary} style={{ marginRight: 8 }} />
+                        <GeistText mono numberOfLines={1} style={{ fontSize: 13, color: theme.text, flex: 1, fontWeight: '500' }}>
                           {alias}
                         </GeistText>
-                        <ExternalLink size={12} color="#0070F3" style={{ marginLeft: 4 }} />
+                        <ExternalLink size={13} color={theme.textSecondary} style={{ marginLeft: 6 }} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
@@ -1137,58 +1134,63 @@ export default function DeploymentScreen() {
         </View>
       </GeistCard>
 
-      {/* Bottom Actions Row */}
-      <View style={styles.actionRow}>
-        <GeistButton
-          title={isFailed ? "View Error Logs" : "View Build Logs"}
-          onPress={() => {
-            router.push({
-              pathname: `/deployment/${id}/logs` as any,
-              params: isFailed ? { error: errorDetails?.message || 'Build Error' } : {},
-            });
-          }}
-          style={{ flex: 1 }}
-        />
-
-        {!isFailed && (
+      {/* Bottom Actions */}
+      <View style={{ gap: 12 }}>
+        <View style={{ flexDirection: 'row', gap: 12 }}>
           <GeistButton
-            title="Visit"
-            onPress={handleVisit}
-            secondary
-            style={{ flex: 1 }}
-          />
-        )}
-
-        {isFailed && (
-          <GeistButton
-            title="Redeploy"
+            title={isFailed ? "Error Logs" : "Build Logs"}
             onPress={() => {
-              setClearCache(true);
-              setRedeployModalOpen(true);
+              router.push({
+                pathname: `/deployment/${id}/logs` as any,
+                params: isFailed ? { error: errorDetails?.message || 'Build Error' } : {},
+              });
             }}
-            secondary
             style={{ flex: 1 }}
           />
-        )}
 
-        {!isFailed && deployment?.target === 'production' && (
-          <TouchableOpacity
-            style={[styles.iconActionBtn, { borderColor: theme.border, backgroundColor: theme.surface }]}
-            onPress={handleRollback}
-            disabled={rollingBack}
-          >
-            {rollingBack ? <ActivityIndicator size="small" color={theme.text} /> : <RotateCcw size={16} color={theme.text} />}
-          </TouchableOpacity>
-        )}
+          {!isFailed && (
+            <GeistButton
+              title="Visit Site"
+              onPress={handleVisit}
+              secondary
+              style={{ flex: 1 }}
+            />
+          )}
 
-        {!isDone && !isFailed && (
-          <TouchableOpacity
-            style={[styles.iconActionBtn, { borderColor: theme.error, backgroundColor: theme.error + '10' }]}
-            onPress={handleCancel}
-            disabled={cancelling}
-          >
-            {cancelling ? <ActivityIndicator size="small" color={theme.error} /> : <XCircle size={16} color={theme.error} />}
-          </TouchableOpacity>
+          {isFailed && (
+            <GeistButton
+              title="Redeploy"
+              onPress={() => {
+                setClearCache(true);
+                setRedeployModalOpen(true);
+              }}
+              secondary
+              style={{ flex: 1 }}
+            />
+          )}
+        </View>
+
+        {((!isFailed && deployment?.target === 'production') || (!isDone && !isFailed)) && (
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {!isFailed && deployment?.target === 'production' && (
+              <GeistButton
+                title={rollingBack ? "Rolling Back..." : "Rollback Traffic"}
+                onPress={handleRollback}
+                secondary
+                style={{ flex: 1 }}
+              />
+            )}
+
+            {!isDone && !isFailed && (
+              <GeistButton
+                title={cancelling ? "Cancelling..." : "Cancel Deployment"}
+                onPress={handleCancel}
+                secondary
+                style={{ flex: 1, borderColor: theme.error, backgroundColor: theme.error + '10' }}
+                textStyle={{ color: theme.error }}
+              />
+            )}
+          </View>
         )}
       </View>
 
@@ -1483,6 +1485,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
+    gap: 16,
   },
   metaLabel: {
     width: 90,
