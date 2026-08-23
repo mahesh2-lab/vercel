@@ -1,56 +1,85 @@
-# Welcome to your Expo app 👋
+# Vercel App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A beautiful, responsive Vercel dashboard application built with **React Native**, **Expo Router**, and the **Vercel API SDK**. Monitor your deployments, manage project settings, and view activity across your Vercel teams right from your iOS, Android, or Web device.
 
-## Get started
+## 🚀 Features
 
-1. Install dependencies
+- **Cross-Platform**: Runs seamlessly on iOS, Android, and Web using Expo.
+- **Vercel SDK Integration**: Direct integration with the `@vercel/sdk` to securely fetch projects, deployments, logs, and environments.
+- **Beautiful UI**: Uses custom theming, animations with `react-native-reanimated`, and Lucide/Simple icons.
+- **File-Based Routing**: Leverages Expo Router for scalable, typed navigation across tabs and nested screens.
+- **Responsive Layout**: Designed with `react-native-safe-area-context` to adapt to various screen sizes and notches.
 
+## 📦 Tech Stack
+
+- [Expo](https://expo.dev/) (~57.0.15)
+- [Expo Router](https://docs.expo.dev/router/introduction/) for routing
+- [React Native](https://reactnative.dev/) (0.86.2)
+- [Vercel SDK](https://sdk.vercel.ai/docs/reference/ai-sdk-core)
+- [Reanimated](https://docs.swmansion.com/react-native-reanimated/) for fluid animations
+- [Lucide React Native](https://lucide.dev/) for iconography
+
+## 🛠️ Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- `npm` or `yarn` installed on your machine
+- [Expo Go](https://expo.dev/go) app on your physical device, or an iOS Simulator / Android Emulator.
+
+### Installation
+
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/mahesh2-lab/vercel-app.git
+   cd vercel-app
+   ```
+
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-2. Start the app
-
-   ```bash
-   npx expo start
+3. **Set up Environment Variables**:
+   Create a `.env` file in the root of your project and add your Vercel Access Token (this file is gitignored to keep your token secure):
+   ```env
+   VERCEL_TOKEN=your_vercel_access_token_here
    ```
 
-In the output, you'll find options to open the app in a
+### Running the App
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+To start the Expo development server, run:
 
 ```bash
-npm run reset-project
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+In the terminal output, you can press:
+- `i` to open the iOS simulator
+- `a` to open the Android emulator
+- `w` to open the app in a web browser
+- Or scan the QR code with your phone's camera (iOS) or the Expo Go app (Android).
 
-### Other setup steps
+## 🗂️ Project Structure
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+The source code resides inside the `src/` directory, following Expo Router conventions:
 
-## Learn more
+- `src/app/`: The core app navigation. Includes tabs (`(tabs)/`), nested project views, deployment logs, etc.
+- `src/components/`: Reusable UI components like headers, themed texts, collapsing sections, and animated icons.
+- `src/api/`: Vercel SDK interactions and API wrappers (`vercel.ts`).
+- `src/hooks/`: Custom React hooks for theme and color-scheme management.
+- `src/theme/`: Shared constants and color palettes for Dark/Light mode support.
+- `src/constants/`: Shared app constants.
 
-To learn more about developing your project with Expo, look at the following resources:
+## 🛡️ Security
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+> [!WARNING]
+> **Never commit your Vercel Access Tokens.** The `.env` file has been added to `.gitignore` to prevent accidental leaks. If you ever accidentally commit a token, revoke it immediately from your Vercel dashboard.
 
-## Join the community
+## 🤝 Contributing
 
-Join our community of developers creating universal apps.
+Contributions are welcome! Please feel free to submit a Pull Request or open an Issue.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 📄 License
+
+This project is open-source and available under the standard MIT License.
