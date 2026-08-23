@@ -54,26 +54,29 @@ Then they open `http://localhost:8080` in their web browser!
 
 ---
 
-## 🌐 Method 3: Share via Docker Hub / GitHub Packages (GHCR)
+## 🌐 Method 3: Share via Docker Hub (Live Repository)
 
-You can push the image to a container registry so your subordinates can pull it with one command.
+The image is already pushed and live on Docker Hub at **`vishal4248/vercel-app`**!
 
-### 1. Push to Docker Hub
+### Subordinates Pull & Run (1-Command Testing)
+Your teammates / subordinates just run this single command on their machines:
+
 ```bash
-# Login to Docker Hub
-docker login
-
-# Tag the image (replace yourusername with your Docker Hub username)
-docker tag vercel-dashboard:latest yourusername/vercel-dashboard:latest
-
-# Push the image
-docker push yourusername/vercel-dashboard:latest
+docker run -d -p 8080:80 --name vercel-app vishal4248/vercel-app:latest
 ```
 
-### 2. Subordinates Pull & Run
-Your teammates run:
+Then open `http://localhost:8080` in any browser!
+
+---
+
+### Pushing New Updates to Docker Hub:
 ```bash
-docker run -d -p 8080:80 yourusername/vercel-dashboard:latest
+# 1. Build new image
+docker build -t vishal4248/vercel-app:latest -t vishal4248/vercel-app:v1.0.0 .
+
+# 2. Push updates to Docker Hub
+docker push vishal4248/vercel-app:latest
+docker push vishal4248/vercel-app:v1.0.0
 ```
 
 ---
