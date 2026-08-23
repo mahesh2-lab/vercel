@@ -42,3 +42,12 @@ example
 # generated native folders
 /ios
 /android
+
+# Docker
+.dockerignore
+Dockerfile*
+docker-compose*.yml
+nginx.conf
+DOCKER_GUIDE.md
+*.tar
+

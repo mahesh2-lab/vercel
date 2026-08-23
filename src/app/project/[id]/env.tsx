@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, View, StyleSheet, TouchableOpacity, TextInput, Platform, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { GeistText, GeistCard, useTheme } from '../../../components/GeistUI';
-import { ArrowLeft, Plus, Lock, Edit2, Trash2, EyeOff, Eye } from 'lucide-react-native';
+import { Plus, Lock, Edit2, Trash2, EyeOff, Eye } from 'lucide-react-native';
 import { vercel } from '../../../api/vercel';
 
 export default function EnvScreen() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
   const theme = useTheme();
 
   const [variables, setVariables] = useState<any[]>([]);
@@ -30,7 +29,6 @@ export default function EnvScreen() {
   }, [id]);
 
   const [showValues, setShowValues] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
   const [showNewValue, setShowNewValue] = useState(false);
@@ -40,7 +38,6 @@ export default function EnvScreen() {
       setVariables([{ key: newKey, value: newValue }, ...variables]);
       setNewKey('');
       setNewValue('');
-      setShowAddForm(false);
     }
   };
 

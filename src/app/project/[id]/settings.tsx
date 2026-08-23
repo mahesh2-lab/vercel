@@ -1,17 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, Alert, TouchableOpacity, Platform, TextInput, ActivityIndicator } from 'react-native';
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  Alert,
+  TouchableOpacity,
+  Platform,
+  TextInput,
+  ActivityIndicator,
+  Modal,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronDown, AlertTriangle, X } from 'lucide-react-native';
 import { GeistText, useTheme, GeistButton } from '../../../components/GeistUI';
-import { ArrowLeft, ChevronDown } from 'lucide-react-native';
+import { Toast, ToastType } from '../../../components/Toast';
 import { vercel } from '../../../api/vercel';
+import { useUserContext } from '../../../context/UserContext';
 
 export default function ProjectSettingsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
+  const { activeScope } = useUserContext();
 
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
+    visible: false,
+    message: '',
+    type: 'success',
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ visible: true, message, type });
+  };
+
+  const projectName = project?.name || (id as string);
 
   useEffect(() => {
     async function fetchProject() {
@@ -28,8 +56,61 @@ export default function ProjectSettingsScreen() {
     fetchProject();
   }, [id]);
 
+  const executeDeleteProject = async () => {
+    setDeleting(true);
+    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+
+    if (!token) {
+      setDeleting(false);
+      showToast('Missing VERCEL_TOKEN to delete project', 'error');
+      return;
+    }
+
+    try {
+      const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
+      const res = await fetch(`https://api.vercel.com/v9/projects/${projectName}${queryParam}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok && res.status !== 204) {
+        const errorData = await res.json().catch(() => ({}));
+        const msg = errorData?.error?.message || errorData?.message || `Failed to delete (${res.status})`;
+        throw new Error(msg);
+      }
+
+      showToast(`Project "${projectName}" was deleted`, 'success');
+      setDeleteModalVisible(false);
+
+      setTimeout(() => {
+        setDeleting(false);
+        router.replace('/');
+      }, 500);
+    } catch (err: any) {
+      console.error('Delete project error:', err);
+      setDeleting(false);
+      showToast(`Delete failed: ${err.message || 'Unknown error'}`, 'error');
+      Alert.alert('Delete Failed', err.message || 'Could not delete project from Vercel.');
+    }
+  };
+
+  const handleDeletePress = () => {
+    setConfirmName('');
+    setDeleteModalVisible(true);
+  };
+
   return (
     <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
+      />
+
       <View style={styles.header}>
         <GeistText weight="bold" style={{ fontSize: 24 }}>Settings</GeistText>
       </View>
@@ -44,7 +125,7 @@ export default function ProjectSettingsScreen() {
           <TouchableOpacity style={[styles.sidebarItem, { backgroundColor: theme.surface }]}>
             <GeistText weight="500" style={{ color: theme.text }}>General</GeistText>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.sidebarItem}>
+          <TouchableOpacity style={styles.sidebarItem} onPress={() => router.push(`/project/${id}/settings/git`)}>
             <GeistText weight="500" secondary>Git</GeistText>
           </TouchableOpacity>
           <TouchableOpacity style={styles.sidebarItem}>
@@ -69,7 +150,7 @@ export default function ProjectSettingsScreen() {
                 
                 <View style={{ flexDirection: 'row', gap: 12, maxWidth: 400 }}>
                   <TextInput 
-                    value={project?.name || (id as string)}
+                    value={projectName}
                     editable={false}
                     style={[styles.input, { borderColor: theme.border, color: theme.text, flex: 1, paddingHorizontal: 12, opacity: 0.7 }]}
                   />
@@ -99,12 +180,7 @@ export default function ProjectSettingsScreen() {
                   </View>
                   <TouchableOpacity 
                     activeOpacity={0.7}
-                    onPress={() => {
-                      Alert.alert('Delete Project', `Are you sure you want to delete ${id}? This action is irreversible.`, [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Delete', style: 'destructive', onPress: () => router.push('/') },
-                      ]);
-                    }}
+                    onPress={handleDeletePress}
                     style={[styles.deleteButton, { backgroundColor: theme.error }]}
                   >
                     <GeistText weight="500" style={{ color: '#fff' }}>Delete Project</GeistText>
@@ -115,6 +191,86 @@ export default function ProjectSettingsScreen() {
           )}
         </View>
       </View>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => !deleting && setDeleteModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <AlertTriangle size={18} color={theme.error} />
+                <GeistText weight="600" style={{ fontSize: 16 }}>
+                  Delete Project
+                </GeistText>
+              </View>
+              <TouchableOpacity onPress={() => !deleting && setDeleteModalVisible(false)}>
+                <X size={18} color={theme.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ padding: 20 }}>
+              <GeistText style={{ fontSize: 14, marginBottom: 16, lineHeight: 20 }}>
+                Are you sure you want to delete <GeistText weight="bold">{projectName}</GeistText>? This will permanently delete all deployments, domains, and environment variables.
+              </GeistText>
+
+              <GeistText secondary style={{ fontSize: 13, marginBottom: 8 }}>
+                To confirm, type <GeistText weight="600" mono>{projectName}</GeistText> in the box below:
+              </GeistText>
+
+              <TextInput
+                value={confirmName}
+                onChangeText={setConfirmName}
+                placeholder={projectName}
+                placeholderTextColor={theme.textSecondary}
+                autoCapitalize="none"
+                style={[
+                  styles.confirmInput,
+                  {
+                    color: theme.text,
+                    borderColor: theme.border,
+                    backgroundColor: theme.background,
+                  },
+                ]}
+              />
+
+              <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 20 }}>
+                <TouchableOpacity
+                  style={[styles.modalCancelBtn, { borderColor: theme.border }]}
+                  onPress={() => setDeleteModalVisible(false)}
+                  disabled={deleting}
+                >
+                  <GeistText weight="500" style={{ fontSize: 14 }}>Cancel</GeistText>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.modalDeleteBtn,
+                    {
+                      backgroundColor: theme.error,
+                      opacity: confirmName.trim() === projectName && !deleting ? 1 : 0.5,
+                    },
+                  ]}
+                  onPress={executeDeleteProject}
+                  disabled={confirmName.trim() !== projectName || deleting}
+                >
+                  {deleting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <GeistText weight="600" style={{ color: '#fff', fontSize: 14 }}>
+                      Delete
+                    </GeistText>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -173,5 +329,54 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 6,
     alignSelf: Platform.OS === 'web' ? 'center' : 'flex-start',
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 480,
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+  },
+  confirmInput: {
+    height: 42,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+  },
+  modalCancelBtn: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  modalDeleteBtn: {
+    borderRadius: 6,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 80,
+  },
 });
