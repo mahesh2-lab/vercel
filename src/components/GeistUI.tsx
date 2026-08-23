@@ -3,7 +3,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  StyleSheet,
   useColorScheme,
   Platform,
   ViewStyle,
@@ -154,7 +153,7 @@ export function GeistButton({
   );
 }
 
-export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed' | 'Queued' | 'Installing' }) {
+export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed' | 'Queued' | 'Installing' | 'Canceled' }) {
   const theme = useTheme();
   
   let color = theme.textSecondary;
@@ -169,6 +168,9 @@ export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed
   } else if (status === 'Failed') {
     color = theme.error;
     bg = theme.error + '26';
+  } else if (status === 'Canceled') {
+    color = theme.textSecondary;
+    bg = theme.surface;
   }
 
   return (

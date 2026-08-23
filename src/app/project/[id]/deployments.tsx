@@ -1,17 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import * as Clipboard from 'expo-clipboard';
+import {
+  Search,
+  GitCommit,
+  Tag,
+  Rocket,
+  RotateCw,
+  Copy,
+  Terminal,
+} from 'lucide-react-native';
 import { GeistText, GeistCard, StatusBadge, useTheme, GeistInput } from '../../../components/GeistUI';
-import { ArrowLeft, Search, GitCommit, Tag } from 'lucide-react-native';
+import { Toast, ToastType } from '../../../components/Toast';
 import { vercel } from '../../../api/vercel';
+import { useUserContext } from '../../../context/UserContext';
 
 export default function ProjectDeploymentsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
+  const { activeScope } = useUserContext();
 
   const [deployments, setDeployments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
+    visible: false,
+    message: '',
+    type: 'success',
+  });
+
+  const showToast = (message: string, type: ToastType = 'success') => {
+    setToast({ visible: true, message, type });
+  };
 
   useEffect(() => {
     async function fetchDeployments() {
@@ -30,14 +60,114 @@ export default function ProjectDeploymentsScreen() {
   }, [id]);
 
   const getStatus = (dep: any) => {
-    const state = dep.readyState || 'READY';
-    if (state === 'READY') return 'Ready';
-    if (state === 'ERROR') return 'Failed';
+    const rawState = (dep.readyState || dep.state || 'READY').toUpperCase();
+    if (rawState === 'READY') return 'Ready';
+    if (rawState === 'ERROR' || rawState === 'FAILED') return 'Failed';
+    if (rawState === 'CANCELED') return 'Canceled';
+    if (rawState === 'QUEUED') return 'Queued';
     return 'Building';
+  };
+
+  const filteredDeployments = useMemo(() => {
+    if (!searchQuery.trim()) return deployments;
+    const q = searchQuery.toLowerCase();
+    return deployments.filter(
+      (d) =>
+        d.url?.toLowerCase().includes(q) ||
+        d.meta?.githubCommitRef?.toLowerCase().includes(q) ||
+        d.meta?.githubCommitMessage?.toLowerCase().includes(q) ||
+        d.target?.toLowerCase().includes(q)
+    );
+  }, [deployments, searchQuery]);
+
+  const handleCopyUrl = async (url: string) => {
+    const full = url.startsWith('http') ? url : `https://${url}`;
+    await Clipboard.setStringAsync(full);
+    showToast('Deployment URL copied');
+  };
+
+  const handlePromote = (dep: any) => {
+    Alert.alert(
+      'Promote to Production',
+      `Promote deployment (${dep.url}) to Production?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Promote',
+          style: 'default',
+          onPress: async () => {
+            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            try {
+              if (token && id) {
+                const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
+                await fetch(`https://api.vercel.com/v10/projects/${id}/promote/${dep.uid || dep.id}${queryParam}`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                  },
+                });
+              }
+
+              setDeployments((prev) =>
+                prev.map((item) =>
+                  item.uid === dep.uid || item.id === dep.id ? { ...item, target: 'production' } : item
+                )
+              );
+              showToast('Promoted to Production!', 'success');
+            } catch (err: any) {
+              showToast(`Promote failed: ${err.message}`, 'error');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleRedeploy = async (dep: any) => {
+    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    showToast(`Redeploying ${dep.name || id}...`);
+
+    try {
+      if (token) {
+        const queryParams = new URLSearchParams();
+        queryParams.append('forceNew', '1');
+        if (activeScope?.type === 'team' && activeScope.id) {
+          queryParams.append('teamId', activeScope.id);
+        }
+        const res = await fetch(`https://api.vercel.com/v13/deployments?${queryParams.toString()}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: dep.name || id,
+            deploymentId: dep.uid || dep.id,
+            target: dep.target || 'production',
+          }),
+        });
+
+        const data = await res.json();
+        const newId = data.id || data.uid || data.url || dep.uid;
+        router.push(`/deployment/${newId}`);
+      } else {
+        router.push(`/deployment/${dep.uid || dep.id}`);
+      }
+    } catch {
+      router.push(`/deployment/${dep.uid || dep.id}`);
+    }
   };
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
+      />
+
       <View style={styles.header}>
         <GeistText weight="bold" style={{ fontSize: 24 }}>Deployments</GeistText>
       </View>
@@ -47,6 +177,8 @@ export default function ProjectDeploymentsScreen() {
           <Search size={20} color={theme.textSecondary} style={{ marginRight: 12 }} />
           <GeistInput 
             placeholder="Search deployments..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
             style={{ borderWidth: 0, backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, flex: 1, fontSize: 16 }}
           />
         </View>
@@ -55,50 +187,120 @@ export default function ProjectDeploymentsScreen() {
           <View style={{ padding: 40, alignItems: 'center' }}>
             <ActivityIndicator size="large" color={theme.text} />
           </View>
-        ) : deployments.length === 0 ? (
+        ) : filteredDeployments.length === 0 ? (
           <View style={{ padding: 40, alignItems: 'center' }}>
-            <GeistText secondary>No deployments found.</GeistText>
+            <GeistText secondary>
+              {searchQuery ? `No deployments match "${searchQuery}"` : 'No deployments found.'}
+            </GeistText>
           </View>
         ) : (
           <View>
-            {deployments.map((dep: any, index: number) => (
-              <TouchableOpacity 
-                key={dep.uid || dep.id}
-                style={[styles.deploymentRow, { borderBottomWidth: index === deployments.length - 1 ? 0 : 1, borderBottomColor: theme.border }]}
-                onPress={() => router.push(`/deployment/${dep.uid || dep.id}`)}
-                activeOpacity={0.7}
-              >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, marginRight: 12 }}>
-                    <GeistText weight="500" style={{ fontSize: 16, marginRight: 12 }}>{dep.url || 'No URL'}</GeistText>
-                    <View style={[styles.envBadge, { backgroundColor: dep.target === 'production' ? (theme.success + '26') : theme.surface, borderColor: dep.target === 'production' ? (theme.success + '40') : theme.border }]}>
-                      <GeistText style={{ fontSize: 12, color: dep.target === 'production' ? theme.success : theme.text }}>
-                        {dep.target === 'production' ? 'Production' : 'Preview'}
+            {filteredDeployments.map((dep: any, index: number) => {
+              const depId = dep.uid || dep.id;
+              const isProduction = dep.target === 'production';
+              return (
+                <View
+                  key={depId}
+                  style={[
+                    styles.deploymentRow,
+                    {
+                      borderBottomWidth: index === filteredDeployments.length - 1 ? 0 : 1,
+                      borderBottomColor: theme.border,
+                    },
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => router.push(`/deployment/${depId}`)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', flex: 1, marginRight: 12 }}>
+                        <GeistText weight="600" style={{ fontSize: 16, marginRight: 10 }}>
+                          {dep.url || 'No URL'}
+                        </GeistText>
+                        <View
+                          style={[
+                            styles.envBadge,
+                            {
+                              backgroundColor: isProduction ? theme.success + '20' : theme.surface,
+                              borderColor: isProduction ? theme.success + '40' : theme.border,
+                            },
+                          ]}
+                        >
+                          <GeistText style={{ fontSize: 11, color: isProduction ? theme.success : theme.text }}>
+                            {isProduction ? 'Production' : 'Preview'}
+                          </GeistText>
+                        </View>
+                      </View>
+                      <StatusBadge status={getStatus(dep) as any} />
+                    </View>
+                    
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginBottom: 12 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <GitCommit color={theme.textSecondary} size={14} style={{ marginRight: 6 }} />
+                        <GeistText mono secondary style={{ fontSize: 12 }}>
+                          {dep.meta?.githubCommitRef || 'main'}
+                        </GeistText>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Tag color={theme.textSecondary} size={14} style={{ marginRight: 6 }} />
+                        <GeistText mono secondary style={{ fontSize: 12 }}>
+                          {dep.meta?.githubCommitSha?.substring(0, 7) || depId?.substring(0, 7) || 'N/A'}
+                        </GeistText>
+                      </View>
+                      <GeistText mono secondary style={{ fontSize: 12 }}>
+                        {dep.createdAt ? new Date(dep.createdAt).toLocaleDateString() : 'Just now'}
                       </GeistText>
                     </View>
+                  </TouchableOpacity>
+
+                  {/* Operational Action Buttons Bar */}
+                  <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', flexWrap: 'wrap', borderTopWidth: 1, borderTopColor: theme.border + '50', paddingTop: 10 }}>
+                    {!isProduction && (
+                      <TouchableOpacity
+                        style={[styles.rowActionBtn, { borderColor: '#0070F3', backgroundColor: '#0070F312' }]}
+                        onPress={() => handlePromote(dep)}
+                      >
+                        <Rocket size={12} color="#0070F3" style={{ marginRight: 4 }} />
+                        <GeistText weight="600" style={{ fontSize: 11, color: '#0070F3' }}>
+                          Promote to Prod
+                        </GeistText>
+                      </TouchableOpacity>
+                    )}
+
+                    <TouchableOpacity
+                      style={[styles.rowActionBtn, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                      onPress={() => handleRedeploy(dep)}
+                    >
+                      <RotateCw size={12} color={theme.text} style={{ marginRight: 4 }} />
+                      <GeistText weight="500" style={{ fontSize: 11 }}>
+                        Redeploy
+                      </GeistText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.rowActionBtn, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                      onPress={() => router.push(`/deployment/${depId}/logs`)}
+                    >
+                      <Terminal size={12} color={theme.text} style={{ marginRight: 4 }} />
+                      <GeistText weight="500" style={{ fontSize: 11 }}>
+                        Logs
+                      </GeistText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[styles.rowActionBtn, { borderColor: theme.border, backgroundColor: theme.surface }]}
+                      onPress={() => handleCopyUrl(dep.url)}
+                    >
+                      <Copy size={12} color={theme.textSecondary} style={{ marginRight: 4 }} />
+                      <GeistText secondary style={{ fontSize: 11 }}>
+                        Copy
+                      </GeistText>
+                    </TouchableOpacity>
                   </View>
-                  <StatusBadge status={getStatus(dep)} />
                 </View>
-                
-                <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <GitCommit color={theme.textSecondary} size={14} style={{ marginRight: 6 }} />
-                    <GeistText mono secondary style={{ fontSize: 13 }}>
-                      {dep.meta?.githubCommitRef || 'main'}
-                    </GeistText>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Tag color={theme.textSecondary} size={14} style={{ marginRight: 6 }} />
-                    <GeistText mono secondary style={{ fontSize: 13 }}>
-                      {dep.meta?.githubCommitSha?.substring(0, 7) || dep.uid?.substring(0, 7) || 'N/A'}
-                    </GeistText>
-                  </View>
-                  <GeistText mono secondary style={{ fontSize: 13 }}>
-                    {dep.createdAt ? new Date(dep.createdAt).toLocaleDateString() : 'Just now'}
-                  </GeistText>
-                </View>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
         )}
       </GeistCard>
@@ -115,15 +317,23 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   header: {
-    marginBottom: 32,
+    marginBottom: 24,
   },
   deploymentRow: {
-    padding: 24,
+    padding: 20,
   },
   envBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
     borderWidth: 1,
-  }
+  },
+  rowActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
 });
