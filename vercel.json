@@ -1,5 +1,5 @@
 {
-  "buildCommand": "expo export -p web",
+  "buildCommand": "expo export --platform web",
   "outputDirectory": "dist/client",
   "functions": {
     "api/index.ts": {
