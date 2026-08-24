@@ -5,11 +5,17 @@ import { expo } from "@better-auth/expo";
 export const auth = betterAuth({
   baseURL:
     process.env.BETTER_AUTH_URL ||
+    process.env.EXPO_PUBLIC_SERVER_URL ||
     process.env.EXPO_PUBLIC_AUTH_URL ||
-    "http://localhost:8081",
+    "https://vercel-app-nine-omega.vercel.app",
   trustedOrigins: [
     "myapp://",
     "myapp://*",
+    "https://vercel-app-nine-omega.vercel.app",
+    "http://localhost:8081",
+    ...(process.env.EXPO_PUBLIC_SERVER_URL ? [process.env.EXPO_PUBLIC_SERVER_URL] : []),
+    ...(process.env.EXPO_PUBLIC_AUTH_URL ? [process.env.EXPO_PUBLIC_AUTH_URL] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
     ...(process.env.NODE_ENV === "development"
       ? ["exp://", "exp://**", "exp://192.168.*.*:*/**"]
       : []),

@@ -25,7 +25,12 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "origin": "https://vercel-app-nine-omega.vercel.app"
+        }
+      ],
       [
         "expo-splash-screen",
         {

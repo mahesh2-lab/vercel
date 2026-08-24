@@ -18,7 +18,6 @@ export default function SocialSignInScreen() {
       setLoading(true);
       const { error } = await authClient.signIn.social({
         provider: "vercel",
-        providerId: "vercel",
         callbackURL: "/dashboard",
       });
 

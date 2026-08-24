@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">= 15.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

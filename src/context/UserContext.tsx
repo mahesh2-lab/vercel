@@ -68,7 +68,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     // If user is logged in, request token from the server
     if (session?.user) {
       try {
-        const baseURL = process.env.EXPO_PUBLIC_AUTH_URL || 'http://localhost:8081';
+        const baseURL =
+          process.env.EXPO_PUBLIC_SERVER_URL ||
+          process.env.EXPO_PUBLIC_AUTH_URL ||
+          'https://vercel-app-nine-omega.vercel.app';
         const res = await authClient.getCookie().then((cookie) =>
           fetch(`${baseURL}/api/vercel/token`, {
             headers: cookie ? { Cookie: cookie } : {},
