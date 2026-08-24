@@ -9,21 +9,33 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
-        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "BETTER_AUTH_SECRET": "DNapXqIwCFAZufgdfs8Kx8xTz1j9DutA",
+        "BETTER_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "VERCEL_CLIENT_ID": "cl_xtfsHOkmPZVwNydE5dNo10WRhZnYbd59",
+        "VERCEL_CLIENT_SECRET": "778fae4ea04d3f8541ef80bce14990cc99a3c08b74b0ef51816d3cde738a5bc7"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
-        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "BETTER_AUTH_SECRET": "DNapXqIwCFAZufgdfs8Kx8xTz1j9DutA",
+        "BETTER_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "VERCEL_CLIENT_ID": "cl_xtfsHOkmPZVwNydE5dNo10WRhZnYbd59",
+        "VERCEL_CLIENT_SECRET": "778fae4ea04d3f8541ef80bce14990cc99a3c08b74b0ef51816d3cde738a5bc7"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
-        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app"
+        "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "BETTER_AUTH_SECRET": "DNapXqIwCFAZufgdfs8Kx8xTz1j9DutA",
+        "BETTER_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",
+        "VERCEL_CLIENT_ID": "cl_xtfsHOkmPZVwNydE5dNo10WRhZnYbd59",
+        "VERCEL_CLIENT_SECRET": "778fae4ea04d3f8541ef80bce14990cc99a3c08b74b0ef51816d3cde738a5bc7"
       }
     }
   },
