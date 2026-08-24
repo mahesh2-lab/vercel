@@ -18,6 +18,9 @@
     },
     "preview": {
       "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
       "env": {
         "EXPO_PUBLIC_SERVER_URL": "https://vercel-app-nine-omega.vercel.app",
         "EXPO_PUBLIC_AUTH_URL": "https://vercel-app-nine-omega.vercel.app",

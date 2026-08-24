@@ -11,7 +11,7 @@ import Svg, { Path } from 'react-native-svg';
 import { ChevronDown, Check, User, Users, X } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { GeistText, useTheme } from './GeistUI';
-import { useUserContext, ActiveScope } from '../context/UserContext';
+import { useUserContext, ActiveScope, VercelTeam } from '../context/UserContext';
 
 export function VercelHeader() {
   const insets = useSafeAreaInsets();
@@ -147,7 +147,7 @@ export function VercelHeader() {
               )}
 
               {/* Teams */}
-              {teams.map((team) => {
+              {teams.map((team: VercelTeam) => {
                 const isSelected = activeScope?.id === team.id;
                 return (
                   <TouchableOpacity
