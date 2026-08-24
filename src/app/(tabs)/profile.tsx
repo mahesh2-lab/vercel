@@ -1,164 +1,722 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
   View,
   StyleSheet,
   Alert,
   TouchableOpacity,
-  TextInput,
   Platform,
-} from 'react-native';
-import { GeistText, useTheme } from '../../components/GeistUI';
-import { useRouter } from 'expo-router';
-import { Edit2, Settings } from 'lucide-react-native';
-import { useUserContext } from '../../context/UserContext';
+  RefreshControl,
+  Image,
+} from "react-native";
+import { useRouter } from "expo-router";
+import * as Clipboard from "expo-clipboard";
+import {
+  User,
+  Mail,
+  Check,
+  Copy,
+  LogOut,
+  Users,
+  Settings,
+  Layers,
+} from "lucide-react-native";
+import {
+  GeistText,
+  GeistCard,
+  useTheme,
+  GeistSpinner,
+} from "../../components/GeistUI";
+import { Toast, ToastType } from "../../components/Toast";
+import { vercel } from "../../api/vercel";
+import { useUserContext, VercelTeam } from "../../context/UserContext";
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { user } = useUserContext();
+  const { user, teams, activeScope, setActiveScope, refreshUser } =
+    useUserContext();
 
-  const [displayName, setDisplayName] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const [fullUser, setFullUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const activeDisplayName = displayName !== null ? displayName : (user?.name || user?.username || '');
-  const activeEmail = email !== null ? email : (user?.email || '');
-  const initial = (activeDisplayName.trim()[0] || user?.username?.[0] || 'V').toUpperCase();
+  // Toast State
+  const [toast, setToast] = useState<{
+    visible: boolean;
+    message: string;
+    type: ToastType;
+  }>({
+    visible: false,
+    message: "",
+    type: "success",
+  });
+
+  const showToast = (message: string, type: ToastType = "success") => {
+    setToast({ visible: true, message, type });
+  };
+
+  const fetchProfileData = useCallback(
+    async (isPull = false) => {
+      const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+      if (!token) {
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      if (isPull) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      try {
+        const userRes = await fetch("https://api.vercel.com/v2/user", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          setFullUser(userData.user || userData);
+        }
+
+        await refreshUser();
+
+        if (isPull) {
+          showToast("Profile refreshed", "success");
+        }
+      } catch (err: any) {
+        console.error("Profile fetch error:", err);
+        showToast("Failed to refresh profile", "error");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [refreshUser],
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    async function load() {
+      if (isMounted) {
+        await fetchProfileData(false);
+      }
+    }
+    load();
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchProfileData]);
+
+  const handleCopy = async (text: string, label: string) => {
+    await Clipboard.setStringAsync(text);
+    showToast(`${label} copied to clipboard!`, "success");
+  };
 
   const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => router.replace('/auth') },
+    Alert.alert("Sign Out", "Are you sure you want to sign out of Vercel?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => {
+          showToast("Signed out", "success");
+          router.replace("/auth");
+        },
+      },
     ]);
   };
 
-  const handleDelete = () => {
-    Alert.alert('Delete Account', 'Are you sure you want to permanently delete your account?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive' },
-    ]);
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Account deletion must be confirmed via the security email sent to your registered address.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Request Deletion Email",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              if (vercel?.user?.requestDelete) {
+                await vercel.user.requestDelete({
+                  reasons: [{ slug: "other", description: "User requested" }],
+                });
+                showToast("Deletion email sent!", "success");
+              } else {
+                showToast("Please visit vercel.com/account", "error");
+              }
+            } catch (err: any) {
+              showToast(
+                err.message || "Deletion request can only be initiated on Web",
+                "error",
+              );
+            }
+          },
+        },
+      ],
+    );
   };
+
+  const activeUser = fullUser || user;
+  const username = activeUser?.username || "user";
+  const displayName = activeUser?.name || username;
+  const email = activeUser?.email || "No email available";
+  const userId = activeUser?.id || "N/A";
+  const plan = activeUser?.billing?.plan
+    ? String(activeUser.billing.plan).toUpperCase()
+    : "HOBBY";
+  const avatarHash = activeUser?.avatar;
+  const avatarUrl = avatarHash
+    ? `https://vercel.com/api/www/avatar/${avatarHash}`
+    : `https://github.com/${username}.png`;
+
+  const memberSince = activeUser?.createdAt
+    ? new Date(activeUser.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Active Member";
+
+  const initial = (
+    displayName.trim()[0] ||
+    username[0] ||
+    "V"
+  ).toUpperCase();
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
-      <View style={[styles.header, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => fetchProfileData(true)}
+          tintColor={theme.text}
+        />
+      }
+    >
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
+      />
+
+      {/* Header */}
+      <View style={styles.header}>
         <View style={{ flex: 1, paddingRight: 16 }}>
-          <GeistText weight="bold" style={{ fontSize: 24, marginBottom: 4 }}>Profile Settings</GeistText>
-          <GeistText secondary>Manage your account settings and personal information.</GeistText>
+          <GeistText weight="bold" style={{ fontSize: 28, marginBottom: 4 }}>
+            Profile & Account
+          </GeistText>
+          <GeistText secondary>
+            Your live Vercel account identity, personal details, and workspaces.
+          </GeistText>
         </View>
+
         <TouchableOpacity
           style={[
-            { 
-              flexDirection: 'row', 
-              alignItems: 'center', 
-              borderWidth: 1, 
-              paddingHorizontal: 12, 
-              paddingVertical: 8, 
-              borderRadius: 6 
-            }, 
-            { borderColor: theme.border, backgroundColor: theme.surface }
+            styles.settingsBtn,
+            { borderColor: theme.border, backgroundColor: theme.surface },
           ]}
-          onPress={() => router.push('/settings')}
+          onPress={() => router.push("/settings")}
+          activeOpacity={0.7}
         >
-          <Settings size={16} color={theme.text} style={{ marginRight: 8 }} />
-          <GeistText weight="500" style={{ fontSize: 13 }}>App Settings</GeistText>
+          <Settings size={16} color={theme.text} style={{ marginRight: 6 }} />
+          <GeistText weight="500" style={{ fontSize: 13 }}>
+            Settings
+          </GeistText>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.grid}>
-        <View style={styles.content}>
-          <View style={[styles.avatarSection, { borderColor: theme.border, backgroundColor: theme.surface }]}>
-            <View style={{ position: 'relative', marginRight: 24, marginBottom: Platform.OS === 'web' ? 0 : 16 }}>
-              <View style={styles.avatar}>
-                <GeistText weight="bold" style={{ fontSize: 32, color: '#fff' }}>{initial}</GeistText>
+      {loading && !refreshing ? (
+        <View style={{ padding: 60, alignItems: "center" }}>
+          <GeistSpinner size={28} color={theme.text} />
+          <GeistText secondary style={{ marginTop: 14 }}>
+            Loading account details...
+          </GeistText>
+        </View>
+      ) : (
+        <View style={styles.grid}>
+          {/* Main User Card */}
+          <GeistCard style={[styles.profileCard, { borderColor: theme.border }]}>
+            <View style={styles.profileCardTop}>
+              <View style={styles.avatarContainer}>
+                <Image
+                  source={{ uri: avatarUrl }}
+                  style={styles.avatarImage}
+                  onError={() => {}}
+                />
+                <View
+                  style={[
+                    styles.avatarFallback,
+                    { backgroundColor: theme.primary },
+                  ]}
+                >
+                  <GeistText
+                    weight="bold"
+                    style={{ fontSize: 28, color: theme.primaryText }}
+                  >
+                    {initial}
+                  </GeistText>
+                </View>
               </View>
-              <TouchableOpacity style={[styles.editAvatarBtn, { backgroundColor: theme.background, borderColor: theme.border }]}>
-                <Edit2 size={14} color={theme.text} />
+
+              <View style={{ flex: 1, justifyContent: "center" }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <GeistText weight="bold" style={{ fontSize: 20 }}>
+                    {displayName}
+                  </GeistText>
+                  <View
+                    style={[
+                      styles.badge,
+                      {
+                        backgroundColor: theme.text,
+                        borderColor: theme.text,
+                      },
+                    ]}
+                  >
+                    <GeistText
+                      style={{
+                        fontSize: 11,
+                        color: theme.background,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {plan}
+                    </GeistText>
+                  </View>
+                </View>
+
+                <GeistText
+                  secondary
+                  mono
+                  style={{ fontSize: 13, marginTop: 2 }}
+                >
+                  @{username}
+                </GeistText>
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginTop: 8,
+                    gap: 6,
+                  }}
+                >
+                  <Mail size={13} color={theme.textSecondary} />
+                  <GeistText secondary style={{ fontSize: 13 }}>
+                    {email}
+                  </GeistText>
+                </View>
+              </View>
+            </View>
+
+            {/* Meta bar */}
+            <View
+              style={[
+                styles.profileMetaBar,
+                {
+                  borderTopColor: theme.border,
+                  backgroundColor: theme.surface,
+                },
+              ]}
+            >
+              <TouchableOpacity
+                style={styles.metaItem}
+                onPress={() => handleCopy(userId, "User ID")}
+                activeOpacity={0.7}
+              >
+                <GeistText secondary style={{ fontSize: 12 }}>
+                  USER ID
+                </GeistText>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 2,
+                  }}
+                >
+                  <GeistText mono weight="500" style={{ fontSize: 12 }}>
+                    {userId.substring(0, 12)}...
+                  </GeistText>
+                  <Copy size={12} color={theme.textSecondary} />
+                </View>
               </TouchableOpacity>
-            </View>
-            <View style={{ flex: 1 }}>
-              <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Avatar</GeistText>
-              <GeistText secondary style={{ marginBottom: 4 }}>This is your avatar. Click on the edit icon to upload a custom one from your files.</GeistText>
-              <GeistText secondary style={{ fontSize: 13, opacity: 0.7 }}>An avatar is optional but strongly recommended.</GeistText>
-            </View>
-          </View>
 
+              <View
+                style={[styles.metaDivider, { backgroundColor: theme.border }]}
+              />
+
+              <View style={styles.metaItem}>
+                <GeistText secondary style={{ fontSize: 12 }}>
+                  MEMBER SINCE
+                </GeistText>
+                <GeistText weight="500" style={{ fontSize: 12, marginTop: 2 }}>
+                  {memberSince}
+                </GeistText>
+              </View>
+
+              <View
+                style={[styles.metaDivider, { backgroundColor: theme.border }]}
+              />
+
+              <View style={styles.metaItem}>
+                <GeistText secondary style={{ fontSize: 12 }}>
+                  STATUS
+                </GeistText>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 4,
+                    marginTop: 2,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderRadius: 3,
+                      backgroundColor: "#10B981",
+                    }}
+                  />
+                  <GeistText
+                    weight="500"
+                    style={{ fontSize: 12, color: "#10B981" }}
+                  >
+                    Active
+                  </GeistText>
+                </View>
+              </View>
+            </View>
+          </GeistCard>
+
+          {/* Workspaces & Teams Section */}
           <View style={styles.section}>
-            <View style={[styles.formCard, { borderColor: theme.border }]}>
-              <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-                <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Display Name</GeistText>
-                <GeistText secondary style={{ marginBottom: 16 }}>Please enter your full name, or a display name you are comfortable with.</GeistText>
-                <TextInput 
-                  value={activeDisplayName}
-                  onChangeText={setDisplayName}
-                  placeholder="Your display name"
-                  placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-                />
+            <View style={styles.sectionHeader}>
+              <View
+                style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
+              >
+                <Users size={18} color={theme.text} />
+                <GeistText weight="600" style={{ fontSize: 18 }}>
+                  Workspaces & Teams
+                </GeistText>
               </View>
-              <View style={[styles.formFooter, { backgroundColor: theme.surface }]}>
-                <GeistText secondary style={{ fontSize: 13 }}>Please use 32 characters at maximum.</GeistText>
-                <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.text }]}>
-                  <GeistText weight="500" style={{ color: theme.background }}>Save</GeistText>
-                </TouchableOpacity>
-              </View>
+              <GeistText secondary style={{ fontSize: 13 }}>
+                {1 + teams.length} available
+              </GeistText>
             </View>
 
-            <View style={[styles.formCard, { borderColor: theme.border, marginTop: 24 }]}>
-              <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: theme.border }}>
-                <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Email Address</GeistText>
-                <GeistText secondary style={{ marginBottom: 16 }}>Please enter the email address you want to use to log in with Vercel.</GeistText>
-                <TextInput 
-                  value={activeEmail}
-                  onChangeText={setEmail}
-                  placeholder="your.email@example.com"
-                  placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { borderColor: theme.border, color: theme.text }]}
-                  autoCapitalize="none"
-                />
-              </View>
-              <View style={[styles.formFooter, { backgroundColor: theme.surface }]}>
-                <GeistText secondary style={{ fontSize: 13 }}>We will email you to verify the change.</GeistText>
-                <TouchableOpacity style={[styles.saveBtn, { backgroundColor: theme.text }]}>
-                  <GeistText weight="500" style={{ color: theme.background }}>Save</GeistText>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <GeistCard style={{ padding: 0, overflow: "hidden" }}>
+              {/* Personal Account Scope */}
+              <TouchableOpacity
+                style={[
+                  styles.scopeRow,
+                  {
+                    borderBottomColor: theme.border,
+                    borderBottomWidth: teams.length > 0 ? 1 : 0,
+                    backgroundColor:
+                      activeScope?.type === "personal"
+                        ? theme.surface
+                        : "transparent",
+                  },
+                ]}
+                onPress={() => {
+                  setActiveScope({
+                    id: activeUser.id,
+                    type: "personal",
+                    name: activeUser.username,
+                    slug: activeUser.username,
+                    avatar: activeUser.avatar,
+                  });
+                  showToast("Switched to Personal workspace", "success");
+                }}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    flex: 1,
+                  }}
+                >
+                  <View
+                    style={[
+                      styles.teamAvatarBadge,
+                      {
+                        backgroundColor: theme.text,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <User size={14} color={theme.background} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                    >
+                      <GeistText weight="600" style={{ fontSize: 15 }}>
+                        {username}
+                      </GeistText>
+                      <GeistText secondary style={{ fontSize: 12 }}>
+                        (Personal Account)
+                      </GeistText>
+                    </View>
+                    <GeistText secondary mono style={{ fontSize: 12 }}>
+                      /{username}
+                    </GeistText>
+                  </View>
+                </View>
+
+                {activeScope?.type === "personal" ? (
+                  <View
+                    style={[
+                      styles.activePill,
+                      {
+                        backgroundColor: theme.text,
+                      },
+                    ]}
+                  >
+                    <Check size={12} color={theme.background} />
+                    <GeistText
+                      style={{
+                        fontSize: 11,
+                        color: theme.background,
+                        fontWeight: "600",
+                        marginLeft: 4,
+                      }}
+                    >
+                      Active
+                    </GeistText>
+                  </View>
+                ) : (
+                  <GeistText secondary style={{ fontSize: 12 }}>
+                    Switch
+                  </GeistText>
+                )}
+              </TouchableOpacity>
+
+              {/* Team Scopes */}
+              {teams.map((team: VercelTeam, idx: number) => {
+                const isActive =
+                  activeScope?.type === "team" && activeScope.id === team.id;
+                const isLast = idx === teams.length - 1;
+
+                return (
+                  <TouchableOpacity
+                    key={team.id}
+                    style={[
+                      styles.scopeRow,
+                      {
+                        borderBottomColor: theme.border,
+                        borderBottomWidth: isLast ? 0 : 1,
+                        backgroundColor: isActive
+                          ? theme.surface
+                          : "transparent",
+                      },
+                    ]}
+                    onPress={() => {
+                      setActiveScope({
+                        id: team.id,
+                        type: "team",
+                        name: team.name,
+                        slug: team.slug,
+                        avatar: team.avatar,
+                      });
+                      showToast(`Switched to team "${team.name}"`, "success");
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 12,
+                        flex: 1,
+                      }}
+                    >
+                      <View
+                        style={[
+                          styles.teamAvatarBadge,
+                          {
+                            backgroundColor: theme.surface,
+                            borderColor: theme.border,
+                          },
+                        ]}
+                      >
+                        <Layers size={14} color={theme.text} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <GeistText weight="600" style={{ fontSize: 15 }}>
+                          {team.name}
+                        </GeistText>
+                        <GeistText secondary mono style={{ fontSize: 12 }}>
+                          /{team.slug}
+                        </GeistText>
+                      </View>
+                    </View>
+
+                    {isActive ? (
+                      <View
+                        style={[
+                          styles.activePill,
+                          {
+                            backgroundColor: theme.text,
+                          },
+                        ]}
+                      >
+                        <Check size={12} color={theme.background} />
+                        <GeistText
+                          style={{
+                            fontSize: 11,
+                            color: theme.background,
+                            fontWeight: "600",
+                            marginLeft: 4,
+                          }}
+                        >
+                          Active
+                        </GeistText>
+                      </View>
+                    ) : (
+                      <GeistText secondary style={{ fontSize: 12 }}>
+                        Switch
+                      </GeistText>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </GeistCard>
           </View>
 
-          <View style={[styles.section, { borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 32 }]}>
-            <GeistText weight="600" style={{ color: theme.error, fontSize: 18, marginBottom: 16 }}>Danger Zone</GeistText>
-            
-            <View style={[styles.dangerBox, { borderColor: theme.error + '80', backgroundColor: theme.error + '0A', marginBottom: 16 }]}>
-              <View style={{ flex: 1, marginRight: 16, marginBottom: Platform.OS === 'web' ? 0 : 16 }}>
-                <GeistText weight="500" style={{ fontSize: 16, marginBottom: 4 }}>Sign Out</GeistText>
-                <GeistText secondary style={{ fontSize: 14 }}>Sign out of your account on this device.</GeistText>
+          {/* Danger Zone */}
+          <View
+            style={[
+              styles.section,
+              {
+                borderTopWidth: 1,
+                borderTopColor: theme.border,
+                paddingTop: 32,
+              },
+            ]}
+          >
+            <GeistText
+              weight="bold"
+              style={{ color: theme.error, fontSize: 18, marginBottom: 16 }}
+            >
+              Danger Zone
+            </GeistText>
+
+            <View
+              style={[
+                styles.dangerBox,
+                {
+                  borderColor: theme.error + "50",
+                  backgroundColor: theme.error + "08",
+                  marginBottom: 16,
+                },
+              ]}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  marginRight: 16,
+                  marginBottom: Platform.OS === "web" ? 0 : 12,
+                }}
+              >
+                <GeistText
+                  weight="600"
+                  style={{ fontSize: 15, marginBottom: 2 }}
+                >
+                  Sign Out
+                </GeistText>
+                <GeistText secondary style={{ fontSize: 13 }}>
+                  Sign out of this session on this device.
+                </GeistText>
               </View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={handleSignOut}
-                style={[styles.dangerBtn, { backgroundColor: theme.error }]}
+                style={[
+                  styles.dangerBtn,
+                  {
+                    backgroundColor: theme.surface,
+                    borderColor: theme.border,
+                  },
+                ]}
               >
-                <GeistText weight="500" style={{ color: '#fff' }}>Sign Out</GeistText>
+                <LogOut
+                  size={14}
+                  color={theme.text}
+                  style={{ marginRight: 6 }}
+                />
+                <GeistText weight="500" style={{ fontSize: 13 }}>
+                  Sign Out
+                </GeistText>
               </TouchableOpacity>
             </View>
 
-            <View style={[styles.dangerBox, { borderColor: theme.error + '80', backgroundColor: theme.error + '0A' }]}>
-              <View style={{ flex: 1, marginRight: 16, marginBottom: Platform.OS === 'web' ? 0 : 16 }}>
-                <GeistText weight="500" style={{ fontSize: 16, marginBottom: 4 }}>Delete Account</GeistText>
-                <GeistText secondary style={{ fontSize: 14 }}>Permanently delete your account and all of its contents.</GeistText>
+            <View
+              style={[
+                styles.dangerBox,
+                {
+                  borderColor: theme.error + "50",
+                  backgroundColor: theme.error + "08",
+                },
+              ]}
+            >
+              <View
+                style={{
+                  flex: 1,
+                  marginRight: 16,
+                  marginBottom: Platform.OS === "web" ? 0 : 12,
+                }}
+              >
+                <GeistText
+                  weight="600"
+                  style={{ fontSize: 15, marginBottom: 2 }}
+                >
+                  Delete Vercel Account
+                </GeistText>
+                <GeistText secondary style={{ fontSize: 13 }}>
+                  Permanently delete your account and all associated projects.
+                </GeistText>
               </View>
-              <TouchableOpacity 
+              <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={handleDelete}
+                onPress={handleDeleteAccount}
                 style={[styles.dangerBtn, { backgroundColor: theme.error }]}
               >
-                <GeistText weight="500" style={{ color: '#fff' }}>Delete Account</GeistText>
+                <GeistText
+                  weight="600"
+                  style={{ color: "#fff", fontSize: 13 }}
+                >
+                  Delete Account
+                </GeistText>
               </TouchableOpacity>
             </View>
           </View>
         </View>
-      </View>
+      )}
     </ScrollView>
   );
 }
@@ -166,92 +724,129 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    maxWidth: 1000,
-    width: '100%',
-    alignSelf: 'center',
-    paddingBottom: 40,
+    maxWidth: 900,
+    width: "100%",
+    alignSelf: "center",
+    paddingBottom: 48,
   },
   header: {
-    marginBottom: 32,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 28,
   },
-  grid: {
-    flexDirection: 'column',
-    gap: 32,
-  },
-  content: {
-    flex: 1,
-    gap: 32,
-  },
-  avatarSection: {
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',
-    padding: 24,
+  settingsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
-    borderRadius: 12,
-  },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: '#0070F3',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editAvatarBtn: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  section: {
-    marginBottom: 0,
-  },
-  formCard: {
-    borderWidth: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 6,
     paddingHorizontal: 12,
-    maxWidth: 400,
-  },
-  formFooter: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  saveBtn: {
-    paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 6,
   },
+  grid: {
+    gap: 28,
+  },
+  profileCard: {
+    padding: 0,
+    overflow: "hidden",
+    borderRadius: 12,
+  },
+  profileCardTop: {
+    padding: 20,
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    alignItems: Platform.OS === "web" ? "center" : "flex-start",
+    gap: 20,
+  },
+  avatarContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    overflow: "hidden",
+    position: "relative",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 36,
+    zIndex: 2,
+  },
+  avatarFallback: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  profileMetaBar: {
+    borderTopWidth: 1,
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  metaItem: {
+    alignItems: "center",
+    paddingHorizontal: 8,
+  },
+  metaDivider: {
+    width: 1,
+    height: 24,
+  },
+  section: {
+    gap: 12,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  scopeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  teamAvatarBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
   dangerBox: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 24,
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    alignItems: Platform.OS === 'web' ? 'center' : 'flex-start',
-    justifyContent: 'space-between',
+    borderRadius: 10,
+    padding: 18,
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    alignItems: Platform.OS === "web" ? "center" : "flex-start",
+    justifyContent: "space-between",
   },
   dangerBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 6,
-    alignSelf: Platform.OS === 'web' ? 'center' : 'flex-start',
-  }
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
 });

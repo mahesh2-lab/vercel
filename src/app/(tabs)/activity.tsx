@@ -34,7 +34,7 @@ import {
   Folder,
   Check,
 } from 'lucide-react-native';
-import { GeistCard, GeistText, StatusBadge, useTheme, GeistInput } from '../../components/GeistUI';
+import { GeistCard, GeistText, StatusBadge, useTheme, GeistInput, GeistSpinner } from '../../components/GeistUI';
 import { Toast, ToastType } from '../../components/Toast';
 import { vercel } from '../../api/vercel';
 import { useUserContext } from '../../context/UserContext';
@@ -739,7 +739,6 @@ export default function ActivityScreen() {
         onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
 
-      {/* Virtualized FlatList for 60/120fps scrolling and ultra-fast touch response */}
       <FlatList
         data={filteredDeployments}
         keyExtractor={(item) => item.uid}
@@ -767,7 +766,7 @@ export default function ActivityScreen() {
         ListEmptyComponent={
           loading ? (
             <View style={{ padding: 60, alignItems: 'center' }}>
-              <ActivityIndicator size="large" color={theme.text} />
+               <GeistSpinner size={30} color={theme.background} />
               <GeistText secondary style={{ marginTop: 12, fontSize: 13 }}>
                 Loading deployment activity...
               </GeistText>
@@ -791,7 +790,7 @@ export default function ActivityScreen() {
         ListFooterComponent={
           loadingMore ? (
             <View style={{ padding: 20, alignItems: 'center' }}>
-              <ActivityIndicator size="small" color={theme.text} />
+               <GeistSpinner size={30} color={theme.text} />
             </View>
           ) : null
         }
@@ -1097,7 +1096,7 @@ export default function ActivityScreen() {
                   disabled={redeploying}
                 >
                   {redeploying ? (
-                    <ActivityIndicator size="small" color={theme.background} />
+                    <GeistSpinner size={20} color={theme.background} />
                   ) : (
                     <GeistText weight="600" style={{ color: theme.background, fontSize: 13 }}>
                       Redeploy

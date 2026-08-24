@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   ScrollView,
   View,
@@ -6,14 +5,26 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
   RefreshControl,
   TextInput,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
-import { siGithub } from 'simple-icons';
+import {
+  siGithub,
+  siNextdotjs,
+  siVite,
+  siAstro,
+  siNuxt,
+  siRemix,
+  siSvelte,
+  siGatsby,
+  siReact,
+  siVuedotjs,
+  siAngular,
+} from 'simple-icons';
 import {
   Search,
   Lock,
@@ -44,9 +55,11 @@ import {
   useTheme,
   GeistButton,
   GeistInput,
+  GeistSpinner,
 } from '../../components/GeistUI';
 import { Toast, ToastType } from '../../components/Toast';
 import { useUserContext } from '../../context/UserContext';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 
 export interface GitRepository {
   id: string;
@@ -73,22 +86,33 @@ export interface FrameworkConfig {
   slug: string;
   command: string;
   output: string;
-  iconText: string;
+  iconPath: string;
+  iconColor: string;
 }
 
 export const FRAMEWORK_PRESETS: FrameworkConfig[] = [
-  { name: 'Next.js', slug: 'nextjs', command: 'npm run build', output: '.next', iconText: '▲' },
-  { name: 'Vite', slug: 'vite', command: 'npm run build', output: 'dist', iconText: '⚡' },
-  { name: 'Astro', slug: 'astro', command: 'npm run build', output: 'dist', iconText: '🚀' },
-  { name: 'Nuxt.js', slug: 'nuxtjs', command: 'npm run build', output: '.output', iconText: '💚' },
-  { name: 'Remix', slug: 'remix', command: 'npm run build', output: 'build', iconText: '💿' },
-  { name: 'SvelteKit', slug: 'sveltekit', command: 'npm run build', output: '.svelte-kit', iconText: '🔥' },
-  { name: 'Gatsby', slug: 'gatsby', command: 'npm run build', output: 'public', iconText: '🟣' },
-  { name: 'Create React App', slug: 'create-react-app', command: 'npm run build', output: 'build', iconText: '⚛️' },
-  { name: 'Vue.js', slug: 'vue', command: 'npm run build', output: 'dist', iconText: '🟢' },
-  { name: 'Angular', slug: 'angular', command: 'npm run build', output: 'dist', iconText: '🅰️' },
-  { name: 'Other', slug: 'other', command: 'npm run build', output: 'public', iconText: '📁' },
+  { name: 'Next.js',         slug: 'nextjs',           command: 'npm run build', output: '.next',       iconPath: siNextdotjs.path, iconColor: '#000000' },
+  { name: 'Vite',            slug: 'vite',             command: 'npm run build', output: 'dist',        iconPath: siVite.path,      iconColor: '#646CFF' },
+  { name: 'Astro',           slug: 'astro',            command: 'npm run build', output: 'dist',        iconPath: siAstro.path,     iconColor: '#FF5D01' },
+  { name: 'Nuxt.js',         slug: 'nuxtjs',           command: 'npm run build', output: '.output',     iconPath: siNuxt.path,      iconColor: '#00DC82' },
+  { name: 'Remix',           slug: 'remix',            command: 'npm run build', output: 'build',       iconPath: siRemix.path,     iconColor: '#000000' },
+  { name: 'SvelteKit',       slug: 'sveltekit',        command: 'npm run build', output: '.svelte-kit', iconPath: siSvelte.path,    iconColor: '#FF3E00' },
+  { name: 'Gatsby',          slug: 'gatsby',           command: 'npm run build', output: 'public',      iconPath: siGatsby.path,    iconColor: '#663399' },
+  { name: 'Create React App',slug: 'create-react-app', command: 'npm run build', output: 'build',       iconPath: siReact.path,     iconColor: '#61DAFB' },
+  { name: 'Vue.js',          slug: 'vue',              command: 'npm run build', output: 'dist',        iconPath: siVuedotjs.path,  iconColor: '#42B883' },
+  { name: 'Angular',         slug: 'angular',          command: 'npm run build', output: 'dist',        iconPath: siAngular.path,   iconColor: '#DD0031' },
+  { name: 'Other',           slug: 'other',            command: 'npm run build', output: 'public',      iconPath: siGithub.path,    iconColor: '#888888' },
 ];
+
+/** Tiny helper that renders a framework's simple-icon SVG */
+export const FrameworkSvgIcon = ({ preset, size = 20, themeText }: { preset: FrameworkConfig; size?: number; themeText: string }) => {
+  const color = preset.slug === 'nextjs' || preset.slug === 'remix' ? themeText : preset.iconColor;
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <Path d={preset.iconPath} />
+    </Svg>
+  );
+};
 
 // Robust .env parser
 export function parseDotEnv(content: string): DeployEnvVar[] {
@@ -910,9 +934,10 @@ export default function DeployScreen() {
               ]}
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <GeistText style={{ fontSize: 16 }}>
-                  {FRAMEWORK_PRESETS.find((p) => p.name === framework)?.iconText || '▲'}
-                </GeistText>
+                {(() => {
+                  const preset = FRAMEWORK_PRESETS.find((p) => p.name === framework);
+                  return preset ? <FrameworkSvgIcon preset={preset} size={18} themeText={theme.text} /> : null;
+                })()}
                 <GeistText weight="500" style={{ fontSize: 14 }}>
                   {framework}
                 </GeistText>
@@ -1381,8 +1406,8 @@ export default function DeployScreen() {
                     }}
                   >
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-                      <GeistText style={{ fontSize: 18 }}>{preset.iconText}</GeistText>
-                      <View>
+                      <FrameworkSvgIcon preset={preset} size={20} themeText={theme.text} />
+                       <View>
                         <GeistText weight="500" style={{ fontSize: 14 }}>
                           {preset.name}
                         </GeistText>

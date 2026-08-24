@@ -7,11 +7,13 @@ import {
   Platform,
   ViewStyle,
   TextStyle,
-  ActivityIndicator,
   TextInput,
   TextInputProps,
   StyleProp,
+  Animated,
+  Easing,
 } from 'react-native';
+import Svg, { Rect } from 'react-native-svg';
 import { themes } from '../theme/colors';
 
 // Font configuration
@@ -23,6 +25,98 @@ export function useTheme() {
   const scheme = useColorScheme();
   return scheme === 'dark' ? themes.dark : themes.light;
 }
+
+export function GeistSpinner({
+  size = 20,
+  color,
+}: {
+  size?: number | 'small' | 'default' | 'large';
+  color?: string;
+}) {
+  const theme = useTheme();
+  const spinValue = React.useRef(new Animated.Value(0)).current;
+
+  const actualSize =
+    typeof size === 'number'
+      ? size
+      : size === 'small'
+      ? 16
+      : size === 'large'
+      ? 28
+      : 20;
+
+  const actualColor = color || theme.text;
+
+  React.useEffect(() => {
+    const animation = Animated.loop(
+      Animated.timing(spinValue, {
+        toValue: 1,
+        duration: 850,
+        easing: Easing.linear,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [spinValue]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  const bars = [
+    { opacity: 0.15, transform: 'rotate(0 12 12)' },
+    { opacity: 0.2, transform: 'rotate(30 12 12)' },
+    { opacity: 0.25, transform: 'rotate(60 12 12)' },
+    { opacity: 0.3, transform: 'rotate(90 12 12)' },
+    { opacity: 0.38, transform: 'rotate(120 12 12)' },
+    { opacity: 0.46, transform: 'rotate(150 12 12)' },
+    { opacity: 0.55, transform: 'rotate(180 12 12)' },
+    { opacity: 0.65, transform: 'rotate(210 12 12)' },
+    { opacity: 0.75, transform: 'rotate(240 12 12)' },
+    { opacity: 0.85, transform: 'rotate(270 12 12)' },
+    { opacity: 0.93, transform: 'rotate(300 12 12)' },
+    { opacity: 1.0, transform: 'rotate(330 12 12)' },
+  ];
+
+  return (
+    <View
+      style={{
+        width: actualSize,
+        height: actualSize,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Animated.View
+        style={{
+          width: actualSize,
+          height: actualSize,
+          transform: [{ rotate: spin }],
+        }}
+      >
+        <Svg width={actualSize} height={actualSize} viewBox="0 0 24 24">
+          {bars.map((bar, i) => (
+            <Rect
+              key={i}
+              x="11"
+              y="1.5"
+              width="2"
+              height="5.5"
+              rx="1"
+              fill={actualColor}
+              opacity={bar.opacity}
+              transform={bar.transform}
+            />
+          ))}
+        </Svg>
+      </Animated.View>
+    </View>
+  );
+}
+
+export const Spinner = GeistSpinner;
 
 export function GeistText({
   children,
@@ -144,11 +238,12 @@ export function GeistButton({
       style={[containerStyle, style]}
     >
       {loading && (
-        <ActivityIndicator 
-          size="small" 
-          color={secondary ? theme.text : theme.primaryText} 
-          style={{ marginRight: 8 }} 
-        />
+        <View style={{ marginRight: 8 }}>
+          <GeistSpinner 
+            size={16} 
+            color={secondary ? theme.text : theme.primaryText} 
+          />
+        </View>
       )}
       {!loading && prefix && (
         <View style={{ marginRight: 8 }}>{prefix}</View>

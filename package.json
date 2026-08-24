@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~57.0.12",
+    "@shopify/flash-list": "2.0.2",
     "@vercel/sdk": "^1.28.21",
     "expo": "~57.0.15",
     "expo-clipboard": "^57.0.1",
