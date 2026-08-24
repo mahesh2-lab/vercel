@@ -6,6 +6,7 @@ import { vercel } from '../../../api/vercel';
 import { GeistCard, GeistText, StatusBadge, useTheme } from '../../../components/GeistUI';
 import { Toast, ToastType } from '../../../components/Toast';
 import { useUserContext } from '../../../context/UserContext';
+import { getCachedVercelToken } from '../../../lib/vercel-token';
 
 export default function PreviewsScreen() {
   const { id } = useLocalSearchParams();
@@ -29,7 +30,7 @@ export default function PreviewsScreen() {
   useEffect(() => {
     async function fetchPreviews() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.deployments.getDeployments({ projectId: id as string, target: 'preview' });
         const list = (result as any)?.deployments || [];
         const now = Date.now();
@@ -63,7 +64,7 @@ export default function PreviewsScreen() {
           text: 'Promote',
           style: 'default',
           onPress: async () => {
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
             try {
               if (token && id) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';

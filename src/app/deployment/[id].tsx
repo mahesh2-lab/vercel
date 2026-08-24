@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { getCachedVercelToken } from '../../lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -106,7 +107,7 @@ export default function DeploymentScreen() {
 
   // Fetch real deployment from Vercel API with continuous polling for active builds
   const fetchDeploymentDetails = useCallback(async () => {
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
     if (!token) return null;
 
     try {
@@ -138,7 +139,7 @@ export default function DeploymentScreen() {
     let pollInterval: any = null;
 
     async function loadAndSync() {
-      const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+      const token = getCachedVercelToken();
 
       if (!token) {
         runLiveSimulation();
@@ -367,7 +368,7 @@ export default function DeploymentScreen() {
   // 1. Redeploy Functionality
   const executeRedeploy = async () => {
     setRedeploying(true);
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
 
     try {
       if (!token) {
@@ -436,7 +437,7 @@ export default function DeploymentScreen() {
           style: 'default',
           onPress: async () => {
             setPromoting(true);
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
 
             try {
               if (token && deployment?.name) {
@@ -485,7 +486,7 @@ export default function DeploymentScreen() {
           style: 'destructive',
           onPress: async () => {
             setRollingBack(true);
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
 
             try {
               if (token && deployment?.name) {
@@ -527,7 +528,7 @@ export default function DeploymentScreen() {
           style: 'destructive',
           onPress: async () => {
             setCancelling(true);
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
 
             try {
               if (token && deployment?.id) {
@@ -563,7 +564,7 @@ export default function DeploymentScreen() {
     }
 
     setAssigningAlias(true);
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
 
     try {
       if (token && deployment?.id) {

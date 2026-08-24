@@ -1,3 +1,4 @@
+import { getCachedVercelToken } from '../../lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -235,7 +236,7 @@ export default function DeployScreen() {
       setHasMoreRepos(true);
     }
 
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
     const username = user?.username;
 
     let loadedRepos: GitRepository[] = [];
@@ -561,11 +562,11 @@ export default function DeployScreen() {
     setDeploying(true);
     setDeployError(null);
 
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
 
     if (!token) {
       setDeploying(false);
-      const errMsg = 'No Vercel Token provided. Please set EXPO_PUBLIC_VERCEL_TOKEN in your .env file.';
+      const errMsg = 'No Vercel token found. Please sign in with Vercel.';
       setDeployError({ message: errMsg, code: 'MISSING_AUTH_TOKEN' });
       showToast('Deployment Failed: Missing Token', 'error');
       return;

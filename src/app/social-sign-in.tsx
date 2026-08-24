@@ -1,35 +1,37 @@
 import React, { useState } from "react";
+import { Alert, StyleSheet, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
 import { authClient } from "../lib/auth-client";
 import { GeistText, useTheme } from "../components/GeistUI";
 
-export default function AuthScreen() {
+export default function SocialSignInScreen() {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleVercelSignIn = async () => {
     try {
       setLoading(true);
       const { error } = await authClient.signIn.social({
         provider: "vercel",
         providerId: "vercel",
-        callbackURL: "/(tabs)",
+        callbackURL: "/dashboard",
       });
 
       if (error) {
-        Alert.alert("Sign In Error", error.message || "Failed to sign in with Vercel");
+        console.error("Better Auth Sign In Error:", error);
+        Alert.alert("Sign In Error", error.message || "Failed to sign in with Vercel. See console for details.");
         return;
       }
 
-      router.replace("/(tabs)");
+      router.replace("/dashboard" as any);
     } catch (err: any) {
-      Alert.alert("Sign In Error", err.message || "An unexpected error occurred during sign in");
+      console.error("Better Auth Sign In Exception:", err);
+      Alert.alert("Sign In Error", err.message || "An unexpected error occurred during sign in. See console for details.");
     } finally {
       setLoading(false);
     }
@@ -47,31 +49,34 @@ export default function AuthScreen() {
       ]}
     >
       <View style={styles.header}>
-        <Svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+        <Svg width="56" height="56" viewBox="0 0 24 24" fill="none">
           <Path d="M12 2L24 22H0L12 2Z" fill={theme.text} />
         </Svg>
         <GeistText weight="600" style={[styles.wordmark, { color: theme.text }]}>
           VERCEL
         </GeistText>
+        <GeistText weight="500" style={[styles.tagline, { color: theme.text }]}>
+          Develop. Preview. Ship.
+        </GeistText>
       </View>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          activeOpacity={0.7}
+          activeOpacity={0.8}
           disabled={loading}
-          onPress={handleLogin}
+          onPress={handleVercelSignIn}
           style={[styles.primaryButton, { backgroundColor: theme.text }]}
         >
           {loading ? (
             <ActivityIndicator color={theme.background} />
           ) : (
             <>
-              <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+              <Svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <Path d="M12 2L24 22H0L12 2Z" fill={theme.background} />
               </Svg>
               <GeistText
                 weight="600"
-                style={{ color: theme.background, fontSize: 15.5, letterSpacing: -0.2 }}
+                style={{ color: theme.background, fontSize: 16, letterSpacing: -0.2 }}
               >
                 Continue with Vercel
               </GeistText>
@@ -79,11 +84,8 @@ export default function AuthScreen() {
           )}
         </TouchableOpacity>
 
-        <GeistText
-          weight="500"
-          style={[styles.helperText, { color: theme.text }]}
-        >
-          Deploy. Preview. Ship.
+        <GeistText weight="500" style={[styles.helperText, { color: theme.text }]}>
+          Authenticate using Better Auth Expo OAuth
         </GeistText>
       </View>
     </View>
@@ -100,13 +102,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 18,
+    gap: 16,
     marginTop: -32,
   },
   wordmark: {
-    fontSize: 14,
+    fontSize: 16,
     letterSpacing: 4,
     opacity: 0.9,
+  },
+  tagline: {
+    fontSize: 14,
+    opacity: 0.5,
+    marginTop: 4,
   },
   buttonContainer: {
     gap: 14,
@@ -115,20 +122,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 9,
-    paddingVertical: 17,
+    gap: 10,
+    paddingVertical: 16,
     borderRadius: 12,
-    minHeight: 52,
-  },
-  ghostButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 6,
-    minHeight: 48,
-    borderWidth: 1,
-    backgroundColor: "transparent",
+    minHeight: 54,
   },
   helperText: {
     textAlign: "center",
@@ -136,14 +133,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     opacity: 0.4,
     marginTop: 2,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 16,
-  },
-  line: {
-    flex: 1,
-    height: 1,
   },
 });

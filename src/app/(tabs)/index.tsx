@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, memo } from "react";
+import { getCachedVercelToken } from '../../lib/vercel-token';
 import {
   View,
   StyleSheet,
@@ -447,9 +448,9 @@ export default function ProjectsScreen() {
       }
       setError("");
 
-      const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+      const token = getCachedVercelToken();
       if (!token) {
-        setError("No EXPO_PUBLIC_VERCEL_TOKEN found in .env");
+        setError("No Vercel token found. Please sign in with Vercel.");
         setLoading(false);
         setRefreshing(false);
         setLoadingMore(false);

@@ -3,6 +3,7 @@ import { ScrollView, View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { GeistText, GeistCard, useTheme, GeistButton, GeistInput, GeistRow } from '../../../../components/GeistUI';
 import { vercel } from '../../../../api/vercel';
+import { getCachedVercelToken } from '../../../../lib/vercel-token';
 
 export default function ProjectGitScreen() {
   const { id } = useLocalSearchParams();
@@ -13,7 +14,7 @@ export default function ProjectGitScreen() {
   useEffect(() => {
     async function fetchProject() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) {
+        if (!getCachedVercelToken()) {
           setRepo(`${id} (git repository)`);
           return;
         }

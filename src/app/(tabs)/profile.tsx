@@ -30,6 +30,7 @@ import {
 import { Toast, ToastType } from "../../components/Toast";
 import { vercel } from "../../api/vercel";
 import { useUserContext, VercelTeam } from "../../context/UserContext";
+import { getCachedVercelToken } from '../../lib/vercel-token';
 
 export default function ProfileScreen() {
   const theme = useTheme();
@@ -58,7 +59,7 @@ export default function ProfileScreen() {
 
   const fetchProfileData = useCallback(
     async (isPull = false) => {
-      const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+      const token = getCachedVercelToken();
       if (!token) {
         setLoading(false);
         setRefreshing(false);

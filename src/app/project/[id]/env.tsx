@@ -4,6 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { GeistText, GeistCard, useTheme } from '../../../components/GeistUI';
 import { Plus, Lock, Edit2, Trash2, EyeOff, Eye } from 'lucide-react-native';
 import { vercel } from '../../../api/vercel';
+import { getCachedVercelToken } from '../../../lib/vercel-token';
 
 export default function EnvScreen() {
   const { id } = useLocalSearchParams();
@@ -15,7 +16,7 @@ export default function EnvScreen() {
   useEffect(() => {
     async function fetchEnvs() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.projects.filterProjectEnvs({ idOrName: id as string });
         const list = (result as any)?.envs || (result as any)?.object?.envs || result || [];
         setVariables(list);

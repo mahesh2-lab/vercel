@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getCachedVercelToken } from '../../lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -62,7 +63,7 @@ export default function ProjectScreen() {
   useEffect(() => {
     async function fetchProject() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.projects.getProject({
           idOrName: id as string,
         });
@@ -96,7 +97,7 @@ export default function ProjectScreen() {
 
   const executeRedeploy = async () => {
     setRedeploying(true);
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
     const projectName = project?.name || (id as string);
     const depId = latestDeployment?.id || latestDeployment?.uid;
 

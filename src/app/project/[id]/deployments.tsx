@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { getCachedVercelToken } from '../../../lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -46,7 +47,7 @@ export default function ProjectDeploymentsScreen() {
   useEffect(() => {
     async function fetchDeployments() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.deployments.getDeployments({ projectId: id as string });
         const list = (result as any)?.deployments || (result as any)?.object?.deployments || result || [];
         setDeployments(list);
@@ -96,7 +97,7 @@ export default function ProjectDeploymentsScreen() {
           text: 'Promote',
           style: 'default',
           onPress: async () => {
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
             try {
               if (token && id) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
@@ -125,7 +126,7 @@ export default function ProjectDeploymentsScreen() {
   };
 
   const handleRedeploy = async (dep: any) => {
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
     showToast(`Redeploying ${dep.name || id}...`);
 
     try {

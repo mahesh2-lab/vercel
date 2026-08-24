@@ -5,6 +5,7 @@ import { GeistText, useTheme, GeistButton } from '../../../components/GeistUI';
 import { CheckCircle2, Copy } from 'lucide-react-native';
 import { vercel } from '../../../api/vercel';
 import * as Clipboard from 'expo-clipboard';
+import { getCachedVercelToken } from '../../../lib/vercel-token';
 
 export default function DeploymentSuccessScreen() {
   const { id } = useLocalSearchParams();
@@ -17,7 +18,7 @@ export default function DeploymentSuccessScreen() {
   useEffect(() => {
     async function fetchDeployment() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.deployments.getDeployment({ idOrUrl: id as string });
         setDeployment((result as any)?.deployment || result);
       } catch (e) {

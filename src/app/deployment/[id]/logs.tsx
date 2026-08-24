@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
+import { getCachedVercelToken } from '../../../lib/vercel-token';
+import{
   ScrollView,
   View,
   StyleSheet,
@@ -103,7 +104,7 @@ export default function BuildLogsScreen() {
       }
 
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) {
+        if (!getCachedVercelToken()) {
           runMockStream();
           return;
         }

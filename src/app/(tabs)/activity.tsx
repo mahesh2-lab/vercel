@@ -38,6 +38,7 @@ import { GeistCard, GeistText, StatusBadge, useTheme, GeistInput, GeistSpinner }
 import { Toast, ToastType } from '../../components/Toast';
 import { vercel } from '../../api/vercel';
 import { useUserContext } from '../../context/UserContext';
+import { getCachedVercelToken } from '../../lib/vercel-token';
 
 export interface ActivityDeployment {
   id: string;
@@ -246,7 +247,7 @@ export default function ActivityScreen() {
       setHasMore(true);
     }
 
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
 
     if (!token) {
       setLoading(false);
@@ -472,7 +473,7 @@ export default function ActivityScreen() {
           text: 'Promote',
           style: 'default',
           onPress: async () => {
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
             try {
               if (token && targetDep.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
@@ -516,7 +517,7 @@ export default function ActivityScreen() {
           text: 'Rollback Traffic',
           style: 'destructive',
           onPress: async () => {
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
             try {
               if (token && targetDep.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
@@ -556,7 +557,7 @@ export default function ActivityScreen() {
           text: 'Cancel Deployment',
           style: 'destructive',
           onPress: async () => {
-            const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+            const token = getCachedVercelToken();
             try {
               if (token && targetDep.uid) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
@@ -592,7 +593,7 @@ export default function ActivityScreen() {
   const executeRedeploy = async () => {
     if (!activeMenuDeployment) return;
     setRedeploying(true);
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
     const dep = activeMenuDeployment;
 
     try {

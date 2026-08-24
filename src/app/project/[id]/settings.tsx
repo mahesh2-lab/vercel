@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getCachedVercelToken } from '../../../lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -44,7 +45,7 @@ export default function ProjectSettingsScreen() {
   useEffect(() => {
     async function fetchProject() {
       try {
-        if (!process.env.EXPO_PUBLIC_VERCEL_TOKEN) return;
+        if (!getCachedVercelToken()) return;
         const result = await vercel.projects.getProject({ idOrName: id as string });
         setProject((result as any)?.project || (result as any)?.object || result);
       } catch (e) {
@@ -58,7 +59,7 @@ export default function ProjectSettingsScreen() {
 
   const executeDeleteProject = async () => {
     setDeleting(true);
-    const token = process.env.EXPO_PUBLIC_VERCEL_TOKEN;
+    const token = getCachedVercelToken();
 
     if (!token) {
       setDeleting(false);
