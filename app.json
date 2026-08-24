@@ -17,7 +17,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.freelanceapps.vercel"
     },
     "web": {
       "output": "server",
@@ -43,6 +44,15 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": "https://vercel-app-nine-omega.vercel.app"
+      },
+      "eas": {
+        "projectId": "5916c6fd-dc7a-43ae-ac46-74a48c300ad5"
+      }
+    },
+    "owner": "freelance-apps"
   }
 }
