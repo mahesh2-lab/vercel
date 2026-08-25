@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS "account" (
   "refreshTokenExpiresAt" TIMESTAMPTZ,
   "scope"                TEXT,
   "password"             TEXT,
+  "issuer"               TEXT,
   "createdAt"            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt"            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
