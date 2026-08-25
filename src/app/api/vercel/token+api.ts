@@ -17,6 +17,9 @@ export async function GET(request: Request) {
       headers: request.headers,
     });
 
+    console.log(accounts);
+    
+
     const vercelAccount = accounts.find(
       (account) => account.providerId === "vercel"
     );
