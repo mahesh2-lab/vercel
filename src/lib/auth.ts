@@ -3,6 +3,10 @@ import { betterAuth } from "better-auth";
 import { genericOAuth } from "better-auth/plugins";
 import pg from "pg";
 
+
+const ca = process.env.DB_CA?.replace(/\\n/g, "\n");
+
+
 const config = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -11,7 +15,7 @@ const config = {
   database: process.env.DB_NAME,
   ssl: {
     rejectUnauthorized: true,
-    ca: process.env.DB_CA,
+    ca
   },
 };
 
