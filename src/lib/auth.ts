@@ -15,17 +15,21 @@ const config = {
   },
 };
 
-const client = new pg.Client(config);
+const pool = new pg.Pool(config);
 
 export const auth = betterAuth({
   baseURL: "https://vercel-app-nine-omega.vercel.app",
-  database: async (pg: any) => {
-    await client.connect();
-    return pg(client);
-  },
-  trustedOrigins: ["myapp://", "https://vercel-app-nine-omega.vercel.app"],
+
+  database: pool,
+
+  trustedOrigins: [
+    "myapp://",
+    "https://vercel-app-nine-omega.vercel.app",
+  ],
+
   plugins: [
     expo(),
+
     genericOAuth({
       config: [
         {
