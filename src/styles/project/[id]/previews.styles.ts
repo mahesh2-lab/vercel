@@ -1,25 +1,26 @@
 import { StyleSheet } from 'react-native';
 import { spacing, radii, typography } from '../../../styles/theme';
+import { scale, verticalScale, moderateScale } from '../../../utils/responsive';
 
 export const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: scale(16),
+    paddingBottom: verticalScale(40),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   list: {
-    gap: 16,
+    gap: scale(16),
   },
   card: {
-    padding: 16,
+    padding: scale(16),
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: verticalScale(12),
   },
   cardFooter: {
     flexDirection: 'row',
@@ -34,25 +35,25 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    gap: 10,
-    marginTop: 14,
-    paddingTop: 12,
+    gap: scale(10),
+    marginTop: verticalScale(14),
+    paddingTop: verticalScale(12),
     borderTopWidth: 1,
   },
   promoteBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: scale(12),
+    paddingVertical: scale(6),
+    borderRadius: scale(6),
     borderWidth: 1,
   },
   linkBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(6),
+    borderRadius: scale(6),
     borderWidth: 1,
   },
 });

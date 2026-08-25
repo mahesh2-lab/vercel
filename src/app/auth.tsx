@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { TouchableOpacity, View, TextInput, Alert } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  TextInput,
+  Alert,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
@@ -24,7 +32,6 @@ export default function AuthScreen() {
     }
   }, [user, userLoading, router]);
 
-
   const handleLogin = async () => {
     const trimmedToken = tokenInput.trim();
     if (!trimmedToken) {
@@ -35,7 +42,7 @@ export default function AuthScreen() {
     try {
       setLoading(true);
       await setToken(trimmedToken);
-      
+
       let res;
       try {
         res = await getUser();
@@ -56,72 +63,81 @@ export default function AuthScreen() {
     }
   };
 
-
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: theme.background,
-          paddingTop: insets.top,
-          paddingBottom: insets.bottom + 24,
-        },
-      ]}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}
     >
-      <View style={styles.header}>
-        <Svg width="52" height="52" viewBox="0 0 24 24" fill="none">
-          <Path d="M12 2L24 22H0L12 2Z" fill={theme.text} />
-        </Svg>
-        <GeistText weight="600" style={[styles.wordmark, { color: theme.text }]}>
-          VERCEL
-        </GeistText>
-      </View>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          {
+            backgroundColor: theme.background,
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom + 32,
+            flexGrow: 1,
+          },
+        ]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+            <Path d="M12 2L24 22H0L12 2Z" fill={theme.text} />
+          </Svg>
+          <GeistText weight="600" style={[styles.wordmark, { color: theme.text }]}>
+            VERCEL
+          </GeistText>
+        </View>
 
-      <View style={styles.buttonContainer}>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: theme.background,
-              borderColor: theme.border,
-              color: theme.text,
-            }
-          ]}
-          placeholder="Paste Vercel Token (vcp_...)"
-          placeholderTextColor={theme.textSecondary}
-          value={tokenInput}
-          onChangeText={setTokenInput}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        <View style={styles.buttonContainer}>
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: theme.background,
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
+            placeholder="Enter the Vercel Token..."
+            placeholderTextColor={theme.textSecondary}
+            value={tokenInput}
+            onChangeText={setTokenInput}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+          />
 
-        <TouchableOpacity
-          activeOpacity={0.7}
-          disabled={loading || !tokenInput}
-          onPress={handleLogin}
-          style={[styles.primaryButton, { backgroundColor: theme.text, opacity: (!tokenInput || loading) ? 0.7 : 1 }]}
-        >
-          {loading ? (
-            <GeistSpinner size={20} color={theme.background} />
-          ) : (
-            <GeistText
-              weight="600"
-              style={{ color: theme.background, fontSize: 15.5, letterSpacing: -0.2 }}
-            >
-              Save Token
-            </GeistText>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            disabled={loading || !tokenInput}
+            onPress={handleLogin}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: theme.text, opacity: !tokenInput || loading ? 0.7 : 1 },
+            ]}
+          >
+            {loading ? (
+              <GeistSpinner size={20} color={theme.background} />
+            ) : (
+              <GeistText
+                weight="600"
+                style={{ color: theme.background, fontSize: 15.5, letterSpacing: -0.2 }}
+              >
+                Continue
+              </GeistText>
+            )}
+          </TouchableOpacity>
 
-        <GeistText
-          weight="500"
-          style={[styles.helperText, { color: theme.text }]}
-        >
-          Deploy. Preview. Ship.
-        </GeistText>
-      </View>
-    </View>
+          <GeistText weight="500" style={[styles.helperText, { color: theme.text }]}>
+            Deploy. Preview. Ship.
+          </GeistText>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
-

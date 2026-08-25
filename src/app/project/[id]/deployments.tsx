@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -201,6 +202,8 @@ export default function ProjectDeploymentsScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { activeScope } = useUserContext();
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 1024 ? 3 : width >= 768 ? 2 : 1;
 
   const [deployments, setDeployments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -359,6 +362,8 @@ export default function ProjectDeploymentsScreen() {
             <FlashList
               data={filteredDeployments}
               keyExtractor={(item) => item.uid || item.id}
+              numColumns={numColumns}
+              key={`${numColumns}`}
               renderItem={({ item, index }) => (
                 <DeploymentRowItem
                   dep={item}

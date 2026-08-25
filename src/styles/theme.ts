@@ -1,35 +1,36 @@
 import { Platform } from 'react-native';
+import { scale, verticalScale, moderateScale } from '../utils/responsive';
 
 export const spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-  xs: 4,
-  sm: 8,
-  md: 14,
-  lg: 18,
-  xl: 24,
-  xxl: 28,
+  half: scale(2),
+  one: scale(4),
+  two: scale(8),
+  three: scale(16),
+  four: scale(24),
+  five: scale(32),
+  six: scale(64),
+  xs: scale(4),
+  sm: scale(8),
+  md: scale(14),
+  lg: scale(18),
+  xl: scale(24),
+  xxl: scale(28),
 };
 
 export const radii = {
-  sm: 6,
-  md: 12,
-  lg: 16,
-  full: 9999,
+  sm: scale(6),
+  md: scale(12),
+  lg: scale(16),
+  full: 9999, // border radii 9999 usually doesn't need scale since it's just circular
 };
 
 export const typography = {
   sizes: {
-    xs: 12,
-    sm: 13,
-    md: 14,
-    lg: 16,
-    xl: 24,
+    xs: moderateScale(12),
+    sm: moderateScale(13),
+    md: moderateScale(14),
+    lg: moderateScale(16),
+    xl: moderateScale(24),
   },
   letterSpacing: {
     tight: -0.2,

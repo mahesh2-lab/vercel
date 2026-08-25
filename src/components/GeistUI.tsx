@@ -118,6 +118,8 @@ export function GeistSpinner({
 
 export const Spinner = GeistSpinner;
 
+import { moderateScale } from '../utils/responsive';
+
 export function GeistText({
   children,
   style,
@@ -126,6 +128,7 @@ export function GeistText({
   weight = 'normal',
   numberOfLines,
   ellipsizeMode,
+  maxFontSizeMultiplier = 1.5,
 }: {
   children: React.ReactNode;
   style?: StyleProp<TextStyle>;
@@ -134,6 +137,7 @@ export function GeistText({
   weight?: 'normal' | '500' | '600' | 'bold';
   numberOfLines?: number;
   ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
+  maxFontSizeMultiplier?: number;
 }) {
   const theme = useTheme();
   
@@ -141,7 +145,7 @@ export function GeistText({
     fontFamily: mono ? monoFamily : sansFamily,
     color: secondary ? theme.textSecondary : theme.text,
     fontWeight: weight === 'normal' ? '400' : weight === '500' ? '500' : weight === '600' ? '600' : 'bold',
-    fontSize: 14,
+    fontSize: moderateScale(14),
     letterSpacing: mono ? 0 : -0.2, // Tighter letter spacing for sans
   };
 
@@ -150,6 +154,7 @@ export function GeistText({
       style={[baseStyle, style]}
       numberOfLines={numberOfLines}
       ellipsizeMode={ellipsizeMode}
+      maxFontSizeMultiplier={maxFontSizeMultiplier}
     >
       {children}
     </Text>

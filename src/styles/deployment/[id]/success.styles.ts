@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { spacing, radii, typography } from '../../../styles/theme';
+import { scale, verticalScale, moderateScale } from '../../../utils/responsive';
 
 export const styles = StyleSheet.create({
   container: {
@@ -9,49 +10,49 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: scale(24),
   },
   urlChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 99,
+    paddingHorizontal: scale(16),
+    paddingVertical: scale(12),
+    borderRadius: scale(99),
     borderWidth: 1,
-    marginBottom: 40,
+    marginBottom: verticalScale(40),
   },
   previewCard: {
     width: '100%',
     aspectRatio: 16/9,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: scale(8),
     overflow: 'hidden',
-    marginBottom: 40,
+    marginBottom: verticalScale(40),
   },
   browserBar: {
-    height: 24,
+    height: verticalScale(24),
     borderBottomWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    gap: 6,
+    paddingHorizontal: scale(8),
+    gap: scale(6),
   },
   browserDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: scale(8),
+    height: verticalScale(8),
+    borderRadius: scale(4),
     backgroundColor: '#EAEAEA', // Will be subtle on both themes
   },
   previewContent: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: scale(24),
   },
   mockSkeleton: {
-    height: 8,
-    borderRadius: 4,
-    marginBottom: 8,
+    height: verticalScale(8),
+    borderRadius: scale(4),
+    marginBottom: verticalScale(8),
   },
   actions: {
     width: '100%',

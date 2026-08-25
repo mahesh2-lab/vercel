@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import { useUserContext } from '../context/UserContext';
 import { GeistSpinner } from '@/components/GeistUI';
 
@@ -10,16 +10,19 @@ export default function Index() {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <Image 
+          source={require('@/assets/images/splash-icon.png')}
+          style={{ width: 76, height: 76, marginBottom: 32 }}
+          resizeMode="contain"
+        />
         <GeistSpinner size={36} color='#fff'/>
       </View>
     );
   }
 
-  // Session found — go straight to the app
   if (user) {
     return <Redirect href="/(tabs)" />;
   }
 
-  // No session — show the sign-in screen
   return <Redirect href="/auth" />;
 }

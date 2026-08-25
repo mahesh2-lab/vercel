@@ -7,6 +7,7 @@ import {
   Platform,
   Modal,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
@@ -197,6 +198,8 @@ export default function ActivityScreen() {
   const router = useRouter();
   const theme = useTheme();
   const { activeScope } = useUserContext();
+  const { width } = useWindowDimensions();
+  const numColumns = width >= 1024 ? 3 : width >= 768 ? 2 : 1;
 
   const [deployments, setDeployments] = useState<ActivityDeployment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -712,6 +715,8 @@ export default function ActivityScreen() {
       <FlashList
         data={filteredDeployments}
         keyExtractor={(item) => item.uid}
+        numColumns={numColumns}
+        key={`${numColumns}`} // Force re-render when columns change
         renderItem={({ item }) => (
           <DeploymentCardItem
             dep={item}

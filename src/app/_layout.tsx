@@ -8,22 +8,23 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   
   return (
-    <UserProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            freezeOnBlur: true,
-            animation: 'slide_from_right',
-            contentStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
-            headerStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
-            headerTintColor: colorScheme === 'dark' ? '#EDEDED' : '#171717',
-            headerShadowVisible: false,
-            headerTitleStyle: { fontWeight: '600' },
-          }}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+    <SafeAreaProvider>
+      <UserProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              freezeOnBlur: true,
+              animation: 'slide_from_right',
+              contentStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
+              headerStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
+              headerTintColor: colorScheme === 'dark' ? '#EDEDED' : '#171717',
+              headerShadowVisible: false,
+              headerTitleStyle: { fontWeight: '600' },
+            }}
+          >
+            <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="auth" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
@@ -67,7 +68,8 @@ export default function RootLayout() {
           <Stack.Screen name="project/[id]/settings/git" options={{ headerShown: true, title: 'Git', headerBackTitle: 'Back' }} />
           <Stack.Screen name="project/[id]/settings/build" options={{ headerShown: true, title: 'Build & Development', headerBackTitle: 'Back' }} />
         </Stack>
-      </ThemeProvider>
-    </UserProvider>
+        </ThemeProvider>
+      </UserProvider>
+    </SafeAreaProvider>
   );
 }

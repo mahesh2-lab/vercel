@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
 import { spacing, radii, typography } from '../../styles/theme';
+import { scale, verticalScale, moderateScale } from '../../utils/responsive';
 
 export const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: scale(16),
+    paddingBottom: verticalScale(40),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
 });

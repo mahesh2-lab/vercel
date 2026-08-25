@@ -1,32 +1,33 @@
 import { StyleSheet } from 'react-native';
 import { spacing, radii, typography } from '../../../styles/theme';
+import { scale, verticalScale, moderateScale } from '../../../utils/responsive';
 
 export const styles = StyleSheet.create({
   container: {
-    padding: 24,
-    maxWidth: 1200,
+    padding: scale(24),
+    maxWidth: scale(1200),
     width: '100%',
     alignSelf: 'center',
-    paddingBottom: 40,
+    paddingBottom: verticalScale(40),
   },
   header: {
-    marginBottom: 24,
+    marginBottom: verticalScale(24),
   },
   deploymentRow: {
-    padding: 20,
+    padding: scale(20),
   },
   envBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: scale(8),
+    paddingVertical: scale(2),
     borderRadius: radii.md,
     borderWidth: 1,
   },
   rowActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 6,
+    paddingHorizontal: scale(10),
+    paddingVertical: scale(5),
+    borderRadius: scale(6),
     borderWidth: 1,
   },
 });
