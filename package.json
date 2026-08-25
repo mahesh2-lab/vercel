@@ -61,5 +61,8 @@
     "lint": "expo lint",
     "vercel-build": "expo export --platform web"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": "22.x"
+  }
 }
