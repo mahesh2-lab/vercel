@@ -1,19 +1,14 @@
 import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
-import { Kysely } from "kysely";
-import { LibsqlDialect } from "@libsql/kysely-libsql";
+import { Pool } from "pg";
 import { genericOAuth } from "better-auth/plugins";
-
-
-const dialect = new LibsqlDialect({
-  url: process.env.TURSO_DATABASE_URL as string,
-  authToken: process.env.TURSO_AUTH_TOKEN as string,
-});
-
 
 export const auth = betterAuth({
   baseURL: "https://vercel-app-nine-omega.vercel.app",
-  database: { dialect, type: "sqlite" },
+  database: new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }, // required for Neon
+  }),
   trustedOrigins: ["myapp://", "https://vercel-app-nine-omega.vercel.app"],
   plugins: [
     expo(),
