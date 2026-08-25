@@ -51,3 +51,5 @@ nginx.conf
 DOCKER_GUIDE.md
 *.tar
 
+.vercel
+.env*

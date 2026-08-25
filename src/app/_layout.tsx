@@ -1,6 +1,7 @@
 import { Stack, ThemeProvider, DarkTheme, DefaultTheme } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { UserProvider } from '../context/UserContext';
 
 export default function RootLayout() {

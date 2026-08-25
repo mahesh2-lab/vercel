@@ -1,25 +1,15 @@
-import { betterAuth } from "better-auth";
-import { genericOAuth } from "better-auth/plugins";
 import { expo } from "@better-auth/expo";
+import { betterAuth } from "better-auth";
+import { Pool } from "pg";
+import { genericOAuth } from "better-auth/plugins";
 
 export const auth = betterAuth({
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    process.env.EXPO_PUBLIC_SERVER_URL ||
-    process.env.EXPO_PUBLIC_AUTH_URL ||
-    "https://vercel-app-nine-omega.vercel.app",
-  trustedOrigins: [
-    "myapp://",
-    "myapp://*",
-    "https://vercel-app-nine-omega.vercel.app",
-    "http://localhost:8081",
-    ...(process.env.EXPO_PUBLIC_SERVER_URL ? [process.env.EXPO_PUBLIC_SERVER_URL] : []),
-    ...(process.env.EXPO_PUBLIC_AUTH_URL ? [process.env.EXPO_PUBLIC_AUTH_URL] : []),
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
-    ...(process.env.NODE_ENV === "development"
-      ? ["exp://", "exp://**", "exp://192.168.*.*:*/**"]
-      : []),
-  ],
+  baseURL: "https://vercel-app-nine-omega.vercel.app",
+  database: new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false },
+  }),
+  trustedOrigins: ["myapp://", "https://vercel-app-nine-omega.vercel.app"],
   plugins: [
     expo(),
     genericOAuth({
@@ -31,7 +21,7 @@ export const auth = betterAuth({
           authorizationUrl: "https://vercel.com/oauth/authorize",
           tokenUrl: "https://api.vercel.com/login/oauth/token",
           userInfoUrl: "https://api.vercel.com/login/oauth/userinfo",
-          scopes: ["openid", "email", "profile", "offline_access"],
+          scopes: ["openid", "email", "profile"],
           pkce: true,
         },
       ],

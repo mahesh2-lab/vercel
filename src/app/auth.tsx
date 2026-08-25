@@ -13,37 +13,49 @@ export default function AuthScreen() {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(false);
 
-  // Watch for session — when OAuth completes the expoClient plugin
-  // intercepts the deep-link, stores the session, and useSession updates.
-  const { data: session } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
 
+  // Navigate as soon as session is confirmed
   useEffect(() => {
     if (session?.user) {
       router.replace("/(tabs)");
     }
   }, [session]);
 
+  // When isPending flips to false (app returned from OAuth browser), reset
+  // the button spinner regardless of outcome — session effect above handles
+  // the success case; we just need to un-freeze the UI on failure/cancel.
+  useEffect(() => {
+    if (!isPending) setLoading(false);
+  }, [isPending]);
+
   const handleLogin = async () => {
     try {
       setLoading(true);
-      // callbackURL must be the deep-link scheme so the OS can hand control
-      // back to the app after the browser finishes. The expoClient plugin
-      // intercepts "myapp://social-sign-in" and stores the session tokens.
       const { error } = await authClient.signIn.social({
         provider: "vercel",
         callbackURL: "myapp://social-sign-in",
       });
-
       if (error) {
         Alert.alert("Sign In Error", error.message || "Failed to sign in with Vercel");
         setLoading(false);
       }
-      // Do NOT navigate here — wait for useSession above to pick up the session.
+      // On success: browser opens. isPending effect above resets loading on return.
     } catch (err: any) {
-      Alert.alert("Sign In Error", err.message || "An unexpected error occurred during sign in");
+      Alert.alert("Sign In Error", err.message || "An unexpected error occurred");
       setLoading(false);
     }
   };
+
+  // While session is resolving (e.g. returning from OAuth browser),
+  // show a plain spinner instead of flashing the login UI.
+  if (isPending) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={theme.text} />
+      </View>
+    );
+  }
 
   return (
     <View
@@ -130,30 +142,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     minHeight: 52,
   },
-  ghostButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 6,
-    minHeight: 48,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-  },
   helperText: {
     textAlign: "center",
     fontSize: 12.5,
     letterSpacing: 0.2,
     opacity: 0.4,
     marginTop: 2,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 16,
-  },
-  line: {
-    flex: 1,
-    height: 1,
   },
 });
