@@ -2,13 +2,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   ScrollView,
   View,
-  StyleSheet,
   Alert,
   TouchableOpacity,
   Platform,
   RefreshControl,
-  Image,
 } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -30,13 +29,15 @@ import {
 import { Toast, ToastType } from "../../components/Toast";
 import { vercel } from "../../api/vercel";
 import { useUserContext, VercelTeam } from "../../context/UserContext";
-import { getCachedVercelToken } from '../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
+import { styles } from "../../styles/(tabs)/profile.styles";
 
 export default function ProfileScreen() {
   const theme = useTheme();
   const router = useRouter();
-  const { user, teams, activeScope, setActiveScope, refreshUser } =
+  const { user, teams, activeScope, setActiveScope, refreshUser, logout } =
     useUserContext();
+
 
   const [fullUser, setFullUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,9 @@ export default function ProfileScreen() {
   const fetchProfileData = useCallback(
     async (isPull = false) => {
       const token = getCachedVercelToken();
+
+      
+
       if (!token) {
         setLoading(false);
         setRefreshing(false);
@@ -73,12 +77,8 @@ export default function ProfileScreen() {
       }
 
       try {
-        const userRes = await fetch("https://api.vercel.com/v2/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const { getUser } = require('../../lib/vercel-api');
+        const userRes = await getUser();
 
         if (userRes.ok) {
           const userData = await userRes.json();
@@ -125,7 +125,8 @@ export default function ProfileScreen() {
       {
         text: "Sign Out",
         style: "destructive",
-        onPress: () => {
+        onPress: async () => {
+          await logout();
           showToast("Signed out", "success");
           router.replace("/auth");
         },
@@ -133,36 +134,6 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const handleDeleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "Account deletion must be confirmed via the security email sent to your registered address.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Request Deletion Email",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              if (vercel?.user?.requestDelete) {
-                await vercel.user.requestDelete({
-                  reasons: [{ slug: "other", description: "User requested" }],
-                });
-                showToast("Deletion email sent!", "success");
-              } else {
-                showToast("Please visit vercel.com/account", "error");
-              }
-            } catch (err: any) {
-              showToast(
-                err.message || "Deletion request can only be initiated on Web",
-                "error",
-              );
-            }
-          },
-        },
-      ],
-    );
-  };
 
   const activeUser = fullUser || user;
   const username = activeUser?.username || "user";
@@ -252,7 +223,9 @@ export default function ProfileScreen() {
                 <Image
                   source={{ uri: avatarUrl }}
                   style={styles.avatarImage}
-                  onError={() => {}}
+                  contentFit="cover"
+                  transition={150}
+                  cachePolicy="memory-disk"
                 />
                 <View
                   style={[
@@ -675,46 +648,6 @@ export default function ProfileScreen() {
                 </GeistText>
               </TouchableOpacity>
             </View>
-
-            <View
-              style={[
-                styles.dangerBox,
-                {
-                  borderColor: theme.error + "50",
-                  backgroundColor: theme.error + "08",
-                },
-              ]}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  marginRight: 16,
-                  marginBottom: Platform.OS === "web" ? 0 : 12,
-                }}
-              >
-                <GeistText
-                  weight="600"
-                  style={{ fontSize: 15, marginBottom: 2 }}
-                >
-                  Delete Vercel Account
-                </GeistText>
-                <GeistText secondary style={{ fontSize: 13 }}>
-                  Permanently delete your account and all associated projects.
-                </GeistText>
-              </View>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={handleDeleteAccount}
-                style={[styles.dangerBtn, { backgroundColor: theme.error }]}
-              >
-                <GeistText
-                  weight="600"
-                  style={{ color: "#fff", fontSize: 13 }}
-                >
-                  Delete Account
-                </GeistText>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
       )}
@@ -722,132 +655,4 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    maxWidth: 900,
-    width: "100%",
-    alignSelf: "center",
-    paddingBottom: 48,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 28,
-  },
-  settingsBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  grid: {
-    gap: 28,
-  },
-  profileCard: {
-    padding: 0,
-    overflow: "hidden",
-    borderRadius: 12,
-  },
-  profileCardTop: {
-    padding: 20,
-    flexDirection: Platform.OS === "web" ? "row" : "column",
-    alignItems: Platform.OS === "web" ? "center" : "flex-start",
-    gap: 20,
-  },
-  avatarContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    overflow: "hidden",
-    position: "relative",
-  },
-  avatarImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 36,
-    zIndex: 2,
-  },
-  avatarFallback: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  profileMetaBar: {
-    borderTopWidth: 1,
-    flexDirection: "row",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  metaItem: {
-    alignItems: "center",
-    paddingHorizontal: 8,
-  },
-  metaDivider: {
-    width: 1,
-    height: 24,
-  },
-  section: {
-    gap: 12,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  scopeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-  },
-  teamAvatarBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  activePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  dangerBox: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 18,
-    flexDirection: Platform.OS === "web" ? "row" : "column",
-    alignItems: Platform.OS === "web" ? "center" : "flex-start",
-    justifyContent: "space-between",
-  },
-  dangerBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: "transparent",
-  },
-});
+

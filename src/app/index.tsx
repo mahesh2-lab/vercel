@@ -1,25 +1,25 @@
 import { Redirect } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { authClient } from '../lib/auth-client';
+import { View } from 'react-native';
+import { useUserContext } from '../context/UserContext';
+import { GeistSpinner } from '@/components/GeistUI';
 
 export default function Index() {
-  const { data: session, isPending } = authClient.useSession();
+  const { user, loading } = useUserContext();
 
   // While the persisted session is being loaded from SecureStore, show a spinner
-  if (isPending) {
+  if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-        <ActivityIndicator size="large" color="#fff" />
+        <GeistSpinner size={36} color='#fff'/>
       </View>
     );
   }
 
   // Session found — go straight to the app
-  if (session?.user) {
+  if (user) {
     return <Redirect href="/(tabs)" />;
   }
 
   // No session — show the sign-in screen
   return <Redirect href="/auth" />;
 }
-

@@ -1,0 +1,132 @@
+import { StyleSheet, Platform } from "react-native";
+import { spacing, radii, typography } from '../../styles/theme';
+
+export const styles = StyleSheet.create({
+  container: {
+    padding: 24,
+    maxWidth: 900,
+    width: "100%",
+    alignSelf: "center",
+    paddingBottom: 48,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 28,
+  },
+  settingsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  grid: {
+    gap: 28,
+  },
+  profileCard: {
+    padding: 0,
+    overflow: "hidden",
+    borderRadius: radii.md,
+  },
+  profileCardTop: {
+    padding: 20,
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    alignItems: Platform.OS === "web" ? "center" : "flex-start",
+    gap: 20,
+  },
+  avatarContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    overflow: "hidden",
+    position: "relative",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 36,
+    zIndex: 2,
+  },
+  avatarFallback: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  profileMetaBar: {
+    borderTopWidth: 1,
+    flexDirection: "row",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  metaItem: {
+    alignItems: "center",
+    paddingHorizontal: 8,
+  },
+  metaDivider: {
+    width: 1,
+    height: 24,
+  },
+  section: {
+    gap: 12,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  scopeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+  },
+  teamAvatarBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  activePill: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  dangerBox: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 18,
+    flexDirection: Platform.OS === "web" ? "row" : "column",
+    alignItems: Platform.OS === "web" ? "center" : "flex-start",
+    justifyContent: "space-between",
+  },
+  dangerBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+});

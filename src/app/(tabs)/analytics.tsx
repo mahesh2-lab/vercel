@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import {
   ScrollView,
   View,
-  StyleSheet,
   TouchableOpacity,
   RefreshControl,
   Platform,
@@ -39,7 +38,7 @@ import {
   siRedwoodjs,
   siNodedotjs,
   siPython,
-} from "simple-icons";
+} from "../../constants/framework-icons";
 import {
   BarChart3,
   TrendingUp,
@@ -71,6 +70,7 @@ import {
 import { Toast, ToastType } from "../../components/Toast";
 import { vercel } from "../../api/vercel";
 import { useUserContext } from "../../context/UserContext";
+import { styles } from "../../styles/(tabs)/analytics.styles";
 
 type TimeRange = "24h" | "7d" | "30d" | "90d";
 type DimensionTab = "pages" | "referrers" | "countries" | "devices" | "events";
@@ -889,9 +889,6 @@ export default function AnalyticsScreen() {
       {loadingAnalytics && !refreshing ? (
         <View style={styles.loadingContainer}>
           <GeistSpinner size={28} color={theme.text} />
-          <GeistText secondary style={{ marginTop: 14, fontSize: 14 }}>
-            Fetching Web Analytics data...
-          </GeistText>
         </View>
       ) : isNotEnabled ? (
         /* Web Analytics Not Enabled State */
@@ -1379,293 +1376,4 @@ function BreakdownList({
   );
 }
 
-const styles = StyleSheet.create({
-  staticPageContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    overflow: "hidden",
-  },
-  projectPickerWrapper: {
-    width: "100%",
-    maxWidth: 420,
-    maxHeight: 600,
-    height: "85%",
-    alignItems: "center",
-  },
-  topIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  mainTitle: {
-    fontSize: 20,
-    letterSpacing: -0.4,
-    textAlign: "center",
-    marginBottom: 6,
-  },
-  mainSubtitle: {
-    fontSize: 13,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  searchBarWrapper: {
-    width: "100%",
-    height: 44,
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  searchBarInput: {
-    fontSize: 14,
-    height: "100%",
-  },
-  scrollListContainer: {
-    flex: 1,
-    width: "100%",
-    position: "relative",
-    overflow: "hidden",
-  },
-  projectsScrollView: {
-    flex: 1,
-    width: "100%",
-  },
-  scrollContentList: {
-    paddingBottom: 90,
-    gap: 4,
-  },
-  bottomFadeOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 100,
-    pointerEvents: "none",
-    zIndex: 10,
-  },
-  projectRowItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 12,
-  },
-  projectRowIcon: {
-    width: 22,
-    height: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  projectRowName: {
-    fontSize: 14,
-    letterSpacing: -0.2,
-  },
-  container: {
-    padding: 20,
-    maxWidth: 960,
-    width: "100%",
-    alignSelf: "center",
-    paddingBottom: 48,
-  },
-  dashboardHeader: {
-    flexDirection: Platform.OS === "web" ? "row" : "column",
-    justifyContent: "space-between",
-    alignItems: Platform.OS === "web" ? "center" : "flex-start",
-    marginBottom: 20,
-    gap: 12,
-  },
-  backToProjectsBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  projectTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flex: 1,
-  },
-  headerIconWrap: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  switchProjectPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  liveBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    gap: 5,
-    backgroundColor: "rgba(16, 185, 129, 0.12)",
-    borderColor: "rgba(16, 185, 129, 0.25)",
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "#10B981",
-  },
-  liveText: {
-    color: "#10B981",
-    fontSize: 11,
-    fontWeight: "700",
-  },
-  controlRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 20,
-  },
-  timeRangeSelector: {
-    flexDirection: "row",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 3,
-  },
-  timeRangeBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 6,
-  },
-  metricToggle: {
-    flexDirection: "row",
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 3,
-  },
-  metricToggleBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 6,
-  },
-  loadingContainer: {
-    padding: 60,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  disabledCard: {
-    padding: 36,
-    alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 12,
-  },
-  disabledIconWrap: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  content: {
-    gap: 20,
-  },
-  metricsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  metricCard: {
-    flex: 1,
-    minWidth: 160,
-    padding: 16,
-  },
-  metricHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
-  },
-  iconCircle: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  chartCard: {
-    padding: 18,
-  },
-  chartCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  selectedTooltipPill: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  chartWrapper: {
-    width: "100%",
-  },
-  chartXLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 10,
-    marginTop: 6,
-  },
-  breakdownSection: {
-    gap: 12,
-  },
-  breakdownHeader: {
-    marginBottom: 4,
-  },
-  tabsContainer: {
-    flexDirection: "row",
-    gap: 8,
-    paddingBottom: 4,
-  },
-  tabBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  breakdownRow: {
-    position: "relative",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    overflow: "hidden",
-  },
-  relativeProgressFill: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-  },
-});
+

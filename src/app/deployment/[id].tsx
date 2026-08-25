@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { getCachedVercelToken } from '../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -12,6 +12,7 @@ import {
   Modal,
   TextInput,
   Share,
+  AppState,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
@@ -112,12 +113,8 @@ export default function DeploymentScreen() {
 
     try {
       const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-      const res = await fetch(`https://api.vercel.com/v13/deployments/${id}${queryParam}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const { getDeployment } = require('../../lib/vercel-api');
+      const res = await getDeployment(id as string, queryParam);
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -290,11 +287,23 @@ export default function DeploymentScreen() {
 
     loadAndSync();
 
+    const appStateSub = AppState.addEventListener('change', (nextState) => {
+      if (nextState !== 'active') {
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      } else if (isMounted && !isDone) {
+        loadAndSync();
+      }
+    });
+
     return () => {
       isMounted = false;
       if (pollInterval) clearInterval(pollInterval);
+      appStateSub.remove();
     };
-  }, [id, fetchDeploymentDetails]);
+  }, [id, fetchDeploymentDetails, isDone]);
 
   const formatTime = (secs: number) => {
     const mins = Math.floor(secs / 60);
@@ -397,14 +406,8 @@ export default function DeploymentScreen() {
         target: redeployTarget,
       };
 
-      const res = await fetch(`https://api.vercel.com/v13/deployments?${queryParams.toString()}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const { createDeployment } = require('../../lib/vercel-api');
+      const res = await createDeployment('?' + queryParams.toString(), payload);
 
       const data = await res.json();
       if (!res.ok) {
@@ -442,16 +445,8 @@ export default function DeploymentScreen() {
             try {
               if (token && deployment?.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                const res = await fetch(
-                  `https://api.vercel.com/v10/projects/${deployment.name}/promote/${deployment.id}${queryParam}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                );
+                const { promoteDeployment } = require('../../lib/vercel-api');
+                const res = await promoteDeployment(deployment.name, deployment.id, queryParam);
 
                 if (!res.ok) {
                   const errorData = await res.json().catch(() => ({}));
@@ -491,16 +486,8 @@ export default function DeploymentScreen() {
             try {
               if (token && deployment?.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(
-                  `https://api.vercel.com/v9/projects/${deployment.name}/rollback/${deployment.id}${queryParam}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                );
+                const { rollbackDeployment } = require('../../lib/vercel-api');
+                await rollbackDeployment(deployment.name, deployment.id, queryParam);
               }
 
               showToast('Production traffic restored to this deployment!', 'success');
@@ -533,13 +520,8 @@ export default function DeploymentScreen() {
             try {
               if (token && deployment?.id) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(`https://api.vercel.com/v12/deployments/${deployment.id}/cancel${queryParam}`, {
-                  method: 'PATCH',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                });
+                const { cancelDeployment } = require('../../lib/vercel-api');
+                await cancelDeployment(deployment.id, queryParam);
               }
 
               setIsDone(true);
@@ -569,14 +551,8 @@ export default function DeploymentScreen() {
     try {
       if (token && deployment?.id) {
         const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-        const res = await fetch(`https://api.vercel.com/v2/deployments/${deployment.id}/aliases${queryParam}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ alias: newAlias.trim() }),
-        });
+        const { createAlias } = require('../../lib/vercel-api');
+        const res = await createAlias(deployment.id, queryParam, newAlias.trim());
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));

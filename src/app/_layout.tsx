@@ -14,6 +14,8 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
+            freezeOnBlur: true,
+            animation: 'slide_from_right',
             contentStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
             headerStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#FFFFFF' },
             headerTintColor: colorScheme === 'dark' ? '#EDEDED' : '#171717',
@@ -21,8 +23,8 @@ export default function RootLayout() {
             headerTitleStyle: { fontWeight: '600' },
           }}
         >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="auth" options={{ headerShown: false }} />
-          <Stack.Screen name="social-sign-in" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen 
             name="project/[id]" 

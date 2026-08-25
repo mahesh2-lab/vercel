@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, TextInput, ScrollView } from 'react-native';
 import { GeistText, useTheme } from '../../components/GeistUI';
 import { Search as SearchIcon } from 'lucide-react-native';
+import { styles } from "../../styles/(tabs)/search.styles";
 
 export default function SearchScreen() {
   const theme = useTheme();
@@ -41,21 +42,4 @@ export default function SearchScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 44,
-  },
-  searchInput: {
-    flex: 1,
-    height: '100%',
-    fontSize: 15,
-  },
-});
+

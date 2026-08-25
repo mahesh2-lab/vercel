@@ -1,1 +1,0 @@
-C:\Users\azure\Documents\projects\vercel\node_modules\@vercel\sdk\dist\models\operations\getdeployments.d.ts

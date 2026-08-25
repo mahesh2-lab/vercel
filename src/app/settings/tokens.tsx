@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { GeistText, GeistCard, useTheme, GeistButton, GeistInput, GeistRow } from '../../components/GeistUI';
+import { styles } from "../../styles/settings/tokens.styles";
 
 export default function AccountTokensScreen() {
   const theme = useTheme();
@@ -37,12 +38,4 @@ export default function AccountTokensScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
-  },
-});
+

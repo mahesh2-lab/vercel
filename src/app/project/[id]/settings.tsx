@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCachedVercelToken } from '../../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
 import {
   ScrollView,
   View,
@@ -8,12 +8,11 @@ import {
   TouchableOpacity,
   Platform,
   TextInput,
-  ActivityIndicator,
   Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronDown, AlertTriangle, X } from 'lucide-react-native';
-import { GeistText, useTheme, GeistButton } from '../../../components/GeistUI';
+import { GeistText, useTheme, GeistButton, GeistSpinner } from '../../../components/GeistUI';
 import { Toast, ToastType } from '../../../components/Toast';
 import { vercel } from '../../../api/vercel';
 import { useUserContext } from '../../../context/UserContext';
@@ -69,13 +68,8 @@ export default function ProjectSettingsScreen() {
 
     try {
       const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-      const res = await fetch(`https://api.vercel.com/v9/projects/${projectName}${queryParam}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const { deleteProject } = require('../../../lib/vercel-api');
+      const res = await deleteProject(projectName, queryParam);
 
       if (!res.ok && res.status !== 204) {
         const errorData = await res.json().catch(() => ({}));
@@ -142,7 +136,9 @@ export default function ProjectSettingsScreen() {
 
         <View style={styles.content}>
           {loading ? (
-            <ActivityIndicator size="large" color={theme.text} style={{ marginTop: 40 }} />
+            <View style={{ marginTop: 40, alignItems: 'center' }}>
+              <GeistSpinner size={36} color={theme.text} />
+            </View>
           ) : (
             <>
               <View style={styles.section}>
@@ -260,7 +256,7 @@ export default function ProjectSettingsScreen() {
                   disabled={confirmName.trim() !== projectName || deleting}
                 >
                   {deleting ? (
-                    <ActivityIndicator size="small" color="#fff" />
+                    <GeistSpinner size="small" color="#fff" />
                   ) : (
                     <GeistText weight="600" style={{ color: '#fff', fontSize: 14 }}>
                       Delete

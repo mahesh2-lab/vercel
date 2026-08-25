@@ -1,7 +1,8 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { GeistText, GeistCard, useTheme, GeistRow } from '../../components/GeistUI';
 import { CreditCard } from 'lucide-react-native';
+import { styles } from "@/styles/settings/billing.styles";
 
 export default function AccountBillingScreen() {
   const theme = useTheme();
@@ -34,12 +35,4 @@ export default function AccountBillingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
-  },
-});
+

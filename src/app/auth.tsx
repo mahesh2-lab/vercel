@@ -1,61 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Alert, StyleSheet, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View, TextInput, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 
-import { authClient } from "../lib/auth-client";
-import { GeistText, useTheme } from "../components/GeistUI";
+import { setToken } from "../lib/token-storage";
+import { getUser } from "../lib/vercel-api";
+import { useUserContext } from "../context/UserContext";
+import { GeistSpinner, GeistText, useTheme } from "../components/GeistUI";
+import { styles } from "../styles/auth.styles";
 
 export default function AuthScreen() {
   const router = useRouter();
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const [tokenInput, setTokenInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user, loading: userLoading, refreshUser } = useUserContext();
 
-  const { data: session, isPending } = authClient.useSession();
-
-  // Navigate as soon as session is confirmed
   useEffect(() => {
-    if (session?.user) {
+    if (!userLoading && user) {
       router.replace("/(tabs)");
     }
-  }, [session]);
+  }, [user, userLoading, router]);
 
-  // When isPending flips to false (app returned from OAuth browser), reset
-  // the button spinner regardless of outcome — session effect above handles
-  // the success case; we just need to un-freeze the UI on failure/cancel.
-  useEffect(() => {
-    if (!isPending) setLoading(false);
-  }, [isPending]);
 
   const handleLogin = async () => {
+    const trimmedToken = tokenInput.trim();
+    if (!trimmedToken) {
+      Alert.alert("Invalid Token", "Please enter a valid Vercel Personal Access Token.");
+      return;
+    }
+
     try {
       setLoading(true);
-      const { error } = await authClient.signIn.social({
-        provider: "vercel",
-        callbackURL: "myapp://social-sign-in",
-      });
-      if (error) {
-        Alert.alert("Sign In Error", error.message || "Failed to sign in with Vercel");
-        setLoading(false);
+      await setToken(trimmedToken);
+      
+      let res;
+      try {
+        res = await getUser();
+      } catch (e) {
+        throw new Error("Invalid token or unauthorized.");
       }
-      // On success: browser opens. isPending effect above resets loading on return.
+
+      if (!res.ok) {
+        throw new Error("Invalid token or unauthorized. Please check your token and try again.");
+      }
+
+      await refreshUser();
+      router.replace("/(tabs)");
     } catch (err: any) {
-      Alert.alert("Sign In Error", err.message || "An unexpected error occurred");
+      Alert.alert("Authentication Failed", err.message || "An unexpected error occurred");
+    } finally {
       setLoading(false);
     }
   };
 
-  // While session is resolving (e.g. returning from OAuth browser),
-  // show a plain spinner instead of flashing the login UI.
-  if (isPending) {
-    return (
-      <View style={[styles.container, { backgroundColor: theme.background, justifyContent: "center" }]}>
-        <ActivityIndicator size="large" color={theme.text} />
-      </View>
-    );
-  }
 
   return (
     <View
@@ -78,26 +78,39 @@ export default function AuthScreen() {
       </View>
 
       <View style={styles.buttonContainer}>
+        <TextInput
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.background,
+              borderColor: theme.border,
+              color: theme.text,
+            }
+          ]}
+          placeholder="Paste Vercel Token (vcp_...)"
+          placeholderTextColor={theme.textSecondary}
+          value={tokenInput}
+          onChangeText={setTokenInput}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
         <TouchableOpacity
           activeOpacity={0.7}
-          disabled={loading}
+          disabled={loading || !tokenInput}
           onPress={handleLogin}
-          style={[styles.primaryButton, { backgroundColor: theme.text }]}
+          style={[styles.primaryButton, { backgroundColor: theme.text, opacity: (!tokenInput || loading) ? 0.7 : 1 }]}
         >
           {loading ? (
-            <ActivityIndicator color={theme.background} />
+            <GeistSpinner size={20} color={theme.background} />
           ) : (
-            <>
-              <Svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <Path d="M12 2L24 22H0L12 2Z" fill={theme.background} />
-              </Svg>
-              <GeistText
-                weight="600"
-                style={{ color: theme.background, fontSize: 15.5, letterSpacing: -0.2 }}
-              >
-                Continue with Vercel
-              </GeistText>
-            </>
+            <GeistText
+              weight="600"
+              style={{ color: theme.background, fontSize: 15.5, letterSpacing: -0.2 }}
+            >
+              Save Token
+            </GeistText>
           )}
         </TouchableOpacity>
 
@@ -112,41 +125,3 @@ export default function AuthScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 28,
-    justifyContent: "space-between",
-  },
-  header: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 18,
-    marginTop: -32,
-  },
-  wordmark: {
-    fontSize: 14,
-    letterSpacing: 4,
-    opacity: 0.9,
-  },
-  buttonContainer: {
-    gap: 14,
-  },
-  primaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 9,
-    paddingVertical: 17,
-    borderRadius: 12,
-    minHeight: 52,
-  },
-  helperText: {
-    textAlign: "center",
-    fontSize: 12.5,
-    letterSpacing: 0.2,
-    opacity: 0.4,
-    marginTop: 2,
-  },
-});

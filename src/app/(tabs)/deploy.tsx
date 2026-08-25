@@ -1,8 +1,7 @@
-import { getCachedVercelToken } from '../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
 import {
   ScrollView,
   View,
-  StyleSheet,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -61,6 +60,7 @@ import {
 import { Toast, ToastType } from '../../components/Toast';
 import { useUserContext } from '../../context/UserContext';
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import { styles } from "../../styles/(tabs)/deploy.styles";
 
 export interface GitRepository {
   id: string;
@@ -596,28 +596,22 @@ export default function DeployScreen() {
 
       // 1. Create or sync project on Vercel
       try {
-        await fetch(`https://api.vercel.com/v10/projects${queryParam}`, {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+        const { createProject } = require('../../lib/vercel-api');
+        await createProject(queryParam, {
+          name: cleanProjectName,
+          framework: frameworkSlug === 'other' ? null : frameworkSlug,
+          buildCommand: command,
+          outputDirectory: output,
+          gitRepository: {
+            type: 'github',
+            repo: repoFullName,
           },
-          body: JSON.stringify({
-            name: cleanProjectName,
-            framework: frameworkSlug === 'other' ? null : frameworkSlug,
-            buildCommand: command,
-            outputDirectory: output,
-            gitRepository: {
-              type: 'github',
-              repo: repoFullName,
-            },
-            environmentVariables: envVars.map((v) => ({
-              key: v.key,
-              value: v.value,
-              target: v.targets,
-              type: 'encrypted',
-            })),
-          }),
+          environmentVariables: envVars.map((v) => ({
+            key: v.key,
+            value: v.value,
+            target: v.targets,
+            type: 'encrypted',
+          })),
         });
       } catch (projErr) {
         console.warn('Project creation/sync info:', projErr);
@@ -652,14 +646,8 @@ export default function DeployScreen() {
       }
 
       // 3. Trigger Deployment via Vercel API
-      const res = await fetch(`https://api.vercel.com/v13/deployments${queryParam}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(deploymentPayload),
-      });
+      const { createDeployment } = require('../../lib/vercel-api');
+      const res = await createDeployment(queryParam, deploymentPayload);
 
       const responseData = await res.json();
 
@@ -1429,131 +1417,4 @@ export default function DeployScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    maxWidth: 900,
-    width: '100%',
-    alignSelf: 'center',
-    paddingBottom: 64,
-  },
-  header: {
-    marginBottom: 28,
-  },
-  repoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  importButton: {
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-  },
-  autoBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  frameworkSelectorBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 6,
-    height: 42,
-    paddingHorizontal: 12,
-  },
-  envActionBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  rawEnvInput: {
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    minHeight: 80,
-  },
-  targetPill: {
-    borderWidth: 1,
-    borderRadius: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  addBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderRadius: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  envRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
-  },
-  errorCard: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 24,
-  },
-  errorActionBtn: {
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 440,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  frameworkOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 6,
-  },
-});
+

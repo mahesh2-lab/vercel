@@ -2,15 +2,13 @@ import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import {
   View,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
   RefreshControl,
   Platform,
   Modal,
   Alert,
-  FlatList,
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import * as WebBrowser from 'expo-web-browser';
@@ -39,6 +37,7 @@ import { Toast, ToastType } from '../../components/Toast';
 import { vercel } from '../../api/vercel';
 import { useUserContext } from '../../context/UserContext';
 import { getCachedVercelToken } from '../../lib/vercel-token';
+import { styles } from "../../styles/(tabs)/activity.styles";
 
 export interface ActivityDeployment {
   id: string;
@@ -477,16 +476,8 @@ export default function ActivityScreen() {
             try {
               if (token && targetDep.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(
-                  `https://api.vercel.com/v10/projects/${targetDep.name}/promote/${targetDep.uid}${queryParam}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                );
+                const { promoteDeployment } = require('../../lib/vercel-api');
+                await promoteDeployment(targetDep.name, targetDep.uid, queryParam);
               }
 
               setDeployments((prev) =>
@@ -521,16 +512,8 @@ export default function ActivityScreen() {
             try {
               if (token && targetDep.name) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(
-                  `https://api.vercel.com/v9/projects/${targetDep.name}/rollback/${targetDep.uid}${queryParam}`,
-                  {
-                    method: 'POST',
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                );
+                const { rollbackDeployment } = require('../../lib/vercel-api');
+                await rollbackDeployment(targetDep.name, targetDep.uid, queryParam);
               }
               showToast('Production traffic restored to this deployment!', 'success');
             } catch (err: any) {
@@ -561,16 +544,8 @@ export default function ActivityScreen() {
             try {
               if (token && targetDep.uid) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(
-                  `https://api.vercel.com/v12/deployments/${targetDep.uid}/cancel${queryParam}`,
-                  {
-                    method: 'PATCH',
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      'Content-Type': 'application/json',
-                    },
-                  }
-                );
+                const { cancelDeployment } = require('../../lib/vercel-api');
+                await cancelDeployment(targetDep.uid, queryParam);
               }
               setDeployments((prev) =>
                 prev.map((d) =>
@@ -623,14 +598,8 @@ export default function ActivityScreen() {
         target: redeployTarget,
       };
 
-      const res = await fetch(`https://api.vercel.com/v13/deployments?${queryParams.toString()}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const { createDeployment } = require('../../lib/vercel-api');
+      const res = await createDeployment('?' + queryParams.toString(), payload);
 
       const data = await res.json();
       if (!res.ok) {
@@ -740,7 +709,7 @@ export default function ActivityScreen() {
         onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
 
-      <FlatList
+      <FlashList
         data={filteredDeployments}
         keyExtractor={(item) => item.uid}
         renderItem={({ item }) => (
@@ -753,10 +722,6 @@ export default function ActivityScreen() {
         )}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.container}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        removeClippedSubviews={Platform.OS !== 'web'}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -767,8 +732,8 @@ export default function ActivityScreen() {
         ListEmptyComponent={
           loading ? (
             <View style={{ padding: 60, alignItems: 'center' }}>
-               <GeistSpinner size={30} color={theme.background} />
-              <GeistText secondary style={{ marginTop: 12, fontSize: 13 }}>
+               <GeistSpinner size={30} color={theme.text} />
+               <GeistText secondary style={{ marginTop: 12, fontSize: 13 }}>
                 Loading deployment activity...
               </GeistText>
             </View>
@@ -1113,192 +1078,4 @@ export default function ActivityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    maxWidth: 1000,
-    width: '100%',
-    alignSelf: 'center',
-    paddingBottom: 48,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  refreshButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  controlsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 18,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 42,
-  },
-  projectDropdownBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 42,
-  },
-  dropdownCard: {
-    width: '100%',
-    maxWidth: 380,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  projectDropdownItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 4,
-  },
-  card: {
-    padding: 18,
-    marginBottom: 14,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 10,
-  },
-  envPill: {
-    borderWidth: 1,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  threeDotBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  urlsContainer: {
-    gap: 6,
-    marginBottom: 12,
-  },
-  urlRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  urlLabel: {
-    width: 80,
-    fontSize: 12,
-  },
-  urlLinkTouch: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 6,
-  },
-  miniIconBtn: {
-    padding: 4,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(128, 128, 128, 0.15)',
-    paddingTop: 10,
-    marginTop: 4,
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 440,
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-  menuActionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-  },
-  targetOption: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  cacheToggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCancelBtn: {
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  modalSubmitBtn: {
-    borderRadius: 6,
-    paddingHorizontal: 18,
-    paddingVertical: 8,
-    minWidth: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+

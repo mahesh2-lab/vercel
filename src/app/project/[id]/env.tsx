@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, TouchableOpacity, TextInput, Platform, ActivityIndicator } from 'react-native';
+import { ScrollView, View, TouchableOpacity, TextInput, Platform } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { GeistText, GeistCard, useTheme } from '../../../components/GeistUI';
+import { GeistText, GeistCard, useTheme, GeistSpinner } from '../../../components/GeistUI';
 import { Plus, Lock, Edit2, Trash2, EyeOff, Eye } from 'lucide-react-native';
 import { vercel } from '../../../api/vercel';
-import { getCachedVercelToken } from '../../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
+import { styles } from "@/styles/project/[id]/env.styles";
 
 export default function EnvScreen() {
   const { id } = useLocalSearchParams();
@@ -106,7 +107,7 @@ export default function EnvScreen() {
         
         {loading ? (
           <View style={{ padding: 40, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color={theme.text} />
+            <GeistSpinner size={36} color={theme.text} />
           </View>
         ) : variables.length === 0 ? (
           <View style={{ padding: 40, alignItems: 'center' }}>
@@ -141,57 +142,4 @@ export default function EnvScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    maxWidth: 1200,
-    width: '100%',
-    alignSelf: 'center',
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 32,
-  },
-  formGrid: {
-    flexDirection: Platform.OS === 'web' ? 'row' : 'column',
-    gap: 16,
-  },
-  formCol: {
-    flex: 1,
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-  },
-  saveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  listHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  toggleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  envRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-  },
-  actionIconBtn: {
-    padding: 6,
-    borderRadius: 4,
-  }
-});
+

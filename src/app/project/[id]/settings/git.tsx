@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, ActivityIndicator } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { GeistText, GeistCard, useTheme, GeistButton, GeistInput, GeistRow } from '../../../../components/GeistUI';
+import { GeistText, GeistCard, useTheme, GeistButton, GeistInput, GeistRow, GeistSpinner } from '../../../../components/GeistUI';
 import { vercel } from '../../../../api/vercel';
-import { getCachedVercelToken } from '../../../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
+import { styles } from "@/styles/project/[id]/settings/git.styles";
 
 export default function ProjectGitScreen() {
   const { id } = useLocalSearchParams();
@@ -43,7 +44,9 @@ export default function ProjectGitScreen() {
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Connected Repository</GeistText>
         {loading ? (
-          <ActivityIndicator size="small" color={theme.text} style={{ marginVertical: 12 }} />
+          <View style={{ marginVertical: 12, alignItems: 'center' }}>
+            <GeistSpinner size={36} color={theme.text} />
+          </View>
         ) : (
           <GeistInput 
             value={repo}
@@ -65,12 +68,4 @@ export default function ProjectGitScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
-  },
-});
+

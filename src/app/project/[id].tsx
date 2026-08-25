@@ -6,7 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Platform,
-  ActivityIndicator,
   Linking,
   Modal,
   Alert,
@@ -18,6 +17,7 @@ import {
   StatusBadge,
   useTheme,
   GeistButton,
+  GeistSpinner,
 } from "../../components/GeistUI";
 import {
   ExternalLink,
@@ -132,14 +132,8 @@ export default function ProjectScreen() {
         payload.deploymentId = depId;
       }
 
-      const res = await fetch(`https://api.vercel.com/v13/deployments?${queryParams.toString()}`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const { createDeployment } = require('../../lib/vercel-api');
+      const res = await createDeployment("?" + queryParams.toString(), payload);
 
       const data = await res.json();
       if (!res.ok) {
@@ -170,7 +164,7 @@ export default function ProjectScreen() {
           alignItems: "center",
         }}
       >
-        <ActivityIndicator size="large" color={theme.text} />
+        <GeistSpinner size={36} color={theme.text} />
       </View>
     );
   }
@@ -473,7 +467,7 @@ export default function ProjectScreen() {
                   disabled={redeploying}
                 >
                   {redeploying ? (
-                    <ActivityIndicator size="small" color={theme.background} />
+                    <GeistSpinner size="small" color={theme.background} />
                   ) : (
                     <GeistText weight="600" style={{ color: theme.background, fontSize: 13 }}>
                       Redeploy

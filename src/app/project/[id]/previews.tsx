@@ -1,12 +1,83 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect, useState, useCallback, memo } from 'react';
+import { ActivityIndicator, StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { FlashList } from '@shopify/flash-list';
 import { GitCommit, GitPullRequest, Rocket, ExternalLink } from 'lucide-react-native';
 import { vercel } from '../../../api/vercel';
 import { GeistCard, GeistText, StatusBadge, useTheme } from '../../../components/GeistUI';
 import { Toast, ToastType } from '../../../components/Toast';
 import { useUserContext } from '../../../context/UserContext';
-import { getCachedVercelToken } from '../../../lib/vercel-token';
+import { getCachedVercelToken } from '@/lib/vercel-token';
+
+const PreviewCardItem = memo(function PreviewCardItem({
+  preview,
+  theme,
+  onPromote,
+  onNavigateDetail,
+}: {
+  preview: any;
+  theme: any;
+  onPromote: (preview: any) => void;
+  onNavigateDetail: (id: string) => void;
+}) {
+  const previewId = preview.uid || preview.id;
+
+  return (
+    <GeistCard style={styles.card}>
+      <TouchableOpacity
+        onPress={() => onNavigateDetail(previewId)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.cardHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
+            <GitCommit color={theme.text} size={14} style={{ marginRight: 6 }} />
+            <GeistText weight="600" style={{ fontSize: 15 }}>
+              {preview.meta?.githubCommitRef || 'N/A'}
+            </GeistText>
+            {preview.url && (
+              <GeistText secondary mono style={{ fontSize: 12, marginLeft: 8 }}>
+                ({preview.url})
+              </GeistText>
+            )}
+          </View>
+          <StatusBadge status={preview.computedStatus} />
+        </View>
+
+        <View style={styles.cardFooter}>
+          <View style={styles.footerInfo}>
+            <GitPullRequest color={theme.textSecondary} size={12} style={{ marginRight: 4 }} />
+            <GeistText secondary mono style={{ fontSize: 12 }}>PR {preview.meta?.githubPrId || 'N/A'}</GeistText>
+            <GeistText secondary style={{ marginHorizontal: 6 }}>·</GeistText>
+            <GeistText secondary style={{ fontSize: 13 }}>{preview.computedTimeStr} ago</GeistText>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Quick Actions */}
+      <View style={[styles.cardActions, { borderTopColor: theme.border + '50' }]}>
+        <TouchableOpacity
+          style={[styles.promoteBtn, { backgroundColor: '#0070F315', borderColor: '#0070F3' }]}
+          onPress={() => onPromote(preview)}
+        >
+          <Rocket size={12} color="#0070F3" style={{ marginRight: 5 }} />
+          <GeistText weight="600" style={{ color: '#0070F3', fontSize: 12 }}>
+            Promote to Production
+          </GeistText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.linkBtn, { borderColor: theme.border }]}
+          onPress={() => onNavigateDetail(previewId)}
+        >
+          <ExternalLink size={12} color={theme.textSecondary} style={{ marginRight: 4 }} />
+          <GeistText secondary style={{ fontSize: 12 }}>
+            Details
+          </GeistText>
+        </TouchableOpacity>
+      </View>
+    </GeistCard>
+  );
+});
 
 export default function PreviewsScreen() {
   const { id } = useLocalSearchParams();
@@ -54,7 +125,7 @@ export default function PreviewsScreen() {
     fetchPreviews();
   }, [id]);
 
-  const handlePromote = (preview: any) => {
+  const handlePromote = useCallback((preview: any) => {
     Alert.alert(
       'Promote Preview to Production',
       `Promote ${preview.meta?.githubCommitRef || 'preview'} (${preview.url || preview.uid}) to Production?`,
@@ -68,13 +139,8 @@ export default function PreviewsScreen() {
             try {
               if (token && id) {
                 const queryParam = activeScope?.type === 'team' ? `?teamId=${activeScope.id}` : '';
-                await fetch(`https://api.vercel.com/v10/projects/${id}/promote/${preview.uid || preview.id}${queryParam}`, {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                });
+                const { promoteDeployment } = require('../../../lib/vercel-api');
+                await promoteDeployment(id as string, (preview.uid || preview.id) as string, queryParam);
               }
 
               showToast('Preview Promoted to Production!', 'success');
@@ -86,10 +152,14 @@ export default function PreviewsScreen() {
         },
       ]
     );
-  };
+  }, [id, activeScope]);
+
+  const handleNavigateDetail = useCallback((previewId: string) => {
+    router.push(`/deployment/${previewId}`);
+  }, [router]);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: theme.background }} contentContainerStyle={styles.container}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <Toast
         visible={toast.visible}
         message={toast.message}
@@ -97,93 +167,45 @@ export default function PreviewsScreen() {
         onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
 
-      <View style={styles.header}>
-        <GeistText weight="bold" style={{ fontSize: 24 }}>Previews</GeistText>
-        <GeistText secondary style={{ marginTop: 4 }}>
-          Preview deployments are separate from Production.
-        </GeistText>
-      </View>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <GeistText weight="bold" style={{ fontSize: 24 }}>Previews</GeistText>
+          <GeistText secondary style={{ marginTop: 4 }}>
+            Preview deployments are separate from Production.
+          </GeistText>
+        </View>
 
-      <View style={styles.list}>
         {loading ? (
           <ActivityIndicator size="large" color={theme.text} style={{ marginTop: 40 }} />
         ) : previews.length === 0 ? (
           <GeistText secondary style={{ textAlign: 'center', marginTop: 40 }}>No preview deployments found.</GeistText>
         ) : (
-          previews.map((preview) => {
-            const previewId = preview.uid || preview.id;
-            return (
-              <GeistCard key={previewId} style={styles.card}>
-                <TouchableOpacity
-                  onPress={() => router.push(`/deployment/${previewId}`)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.cardHeader}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, marginRight: 10 }}>
-                      <GitCommit color={theme.text} size={14} style={{ marginRight: 6 }} />
-                      <GeistText weight="600" style={{ fontSize: 15 }}>
-                        {preview.meta?.githubCommitRef || 'N/A'}
-                      </GeistText>
-                      {preview.url && (
-                        <GeistText secondary mono style={{ fontSize: 12, marginLeft: 8 }}>
-                          ({preview.url})
-                        </GeistText>
-                      )}
-                    </View>
-                    <StatusBadge status={preview.computedStatus} />
-                  </View>
-
-                  <View style={styles.cardFooter}>
-                    <View style={styles.footerInfo}>
-                      <GitPullRequest color={theme.textSecondary} size={12} style={{ marginRight: 4 }} />
-                      <GeistText secondary mono style={{ fontSize: 12 }}>PR {preview.meta?.githubPrId || 'N/A'}</GeistText>
-                      <GeistText secondary style={{ marginHorizontal: 6 }}>·</GeistText>
-                      <GeistText secondary style={{ fontSize: 13 }}>{preview.computedTimeStr} ago</GeistText>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-
-                {/* Quick Actions */}
-                <View style={[styles.cardActions, { borderTopColor: theme.border + '50' }]}>
-                  <TouchableOpacity
-                    style={[styles.promoteBtn, { backgroundColor: '#0070F315', borderColor: '#0070F3' }]}
-                    onPress={() => handlePromote(preview)}
-                  >
-                    <Rocket size={12} color="#0070F3" style={{ marginRight: 5 }} />
-                    <GeistText weight="600" style={{ color: '#0070F3', fontSize: 12 }}>
-                      Promote to Production
-                    </GeistText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.linkBtn, { borderColor: theme.border }]}
-                    onPress={() => router.push(`/deployment/${previewId}`)}
-                  >
-                    <ExternalLink size={12} color={theme.textSecondary} style={{ marginRight: 4 }} />
-                    <GeistText secondary style={{ fontSize: 12 }}>
-                      Details
-                    </GeistText>
-                  </TouchableOpacity>
-                </View>
-              </GeistCard>
-            );
-          })
+          <FlashList
+            data={previews}
+            keyExtractor={(item) => item.uid || item.id}
+            renderItem={({ item }) => (
+              <PreviewCardItem
+                preview={item}
+                theme={theme}
+                onPromote={handlePromote}
+                onNavigateDetail={handleNavigateDetail}
+              />
+            )}
+            ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          />
         )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    paddingBottom: 40,
+    flex: 1,
   },
   header: {
-    marginBottom: 24,
-  },
-  list: {
-    gap: 16,
+    marginBottom: 20,
   },
   card: {
     padding: 16,

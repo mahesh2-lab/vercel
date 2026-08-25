@@ -1,25 +1,23 @@
 import { Tabs, Redirect } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-import { useTheme } from '../../components/GeistUI';
+import { View } from 'react-native';
+import { GeistSpinner, useTheme } from '../../components/GeistUI';
 import { VercelHeader } from '../../components/VercelHeader';
 import { Home, Activity, User, BarChart3 } from 'lucide-react-native';
-import { authClient } from '../../lib/auth-client';
+import { useUserContext } from '../../context/UserContext';
 
 export default function TabLayout() {
   const theme = useTheme();
-  const { data: session, isPending } = authClient.useSession();
+  const { user, loading } = useUserContext();
 
-  // Still loading persisted session from SecureStore
-  if (isPending) {
+  if (loading && !user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
-        <ActivityIndicator size="large" color={theme.text} />
+        <GeistSpinner size={36} color={theme.text} />
       </View>
     );
   }
 
-  // Not signed in — redirect to auth
-  if (!session?.user) {
+  if (!user) {
     return <Redirect href="/auth" />;
   }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ScrollView, View, StyleSheet, Switch } from 'react-native';
+import { ScrollView, View, Switch } from 'react-native';
 import { GeistText, GeistCard, useTheme } from '../../components/GeistUI';
+import { styles } from "../../styles/settings/security.styles";
 
 export default function AccountSecurityScreen() {
   const theme = useTheme();
@@ -37,12 +38,4 @@ export default function AccountSecurityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
-  },
-});
+

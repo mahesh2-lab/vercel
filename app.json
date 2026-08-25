@@ -2,10 +2,11 @@
   "expo": {
     "name": "vercel",
     "slug": "vercel",
+    "jsEngine": "hermes",
+    "scheme": "vercel",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -21,17 +22,11 @@
       "package": "com.freelanceapps.vercel"
     },
     "web": {
-      "output": "server",
-      "favicon": "./assets/images/favicon.png",
-      "bundler": "metro"
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://vercel-app-nine-omega.vercel.app"
-        }
-      ],
+      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -46,9 +41,6 @@
       "reactCompiler": true
     },
     "extra": {
-      "router": {
-        "origin": "https://vercel-app-nine-omega.vercel.app//"
-      },
       "eas": {
         "projectId": "5916c6fd-dc7a-43ae-ac46-74a48c300ad5"
       }
