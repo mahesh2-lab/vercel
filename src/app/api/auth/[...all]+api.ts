@@ -4,7 +4,7 @@ const handler = async (request: Request) => {
   try {
     console.log("Auth request:", request.method, request.url);
     const response = await auth.handler(request);
-
+  
     if (!response.ok) {
       const clone = response.clone();
       const body = await clone.text();

@@ -1,14 +1,28 @@
 import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
 import { genericOAuth } from "better-auth/plugins";
+import pg from "pg";
+
+const config = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  database: process.env.DB_NAME,
+  ssl: {
+    rejectUnauthorized: true,
+    ca: process.env.DB_CA,
+  },
+};
+
+const client = new pg.Client(config);
 
 export const auth = betterAuth({
   baseURL: "https://vercel-app-nine-omega.vercel.app",
-  database: new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }, // required for Neon
-  }),
+  database: async (pg: any) => {
+    await client.connect();
+    return pg(client);
+  },
   trustedOrigins: ["myapp://", "https://vercel-app-nine-omega.vercel.app"],
   plugins: [
     expo(),

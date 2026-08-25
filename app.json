@@ -47,7 +47,7 @@
     },
     "extra": {
       "router": {
-        "origin": "https://vercel-app-nine-omega.vercel.app"
+        "origin": "https://vercel-app-nine-omega.vercel.app//"
       },
       "eas": {
         "projectId": "5916c6fd-dc7a-43ae-ac46-74a48c300ad5"

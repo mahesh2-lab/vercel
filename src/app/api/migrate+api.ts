@@ -5,7 +5,7 @@ import { Pool } from "pg";
  * Hit once with the BETTER_AUTH_SECRET header, then DELETE this file.
  *
  * Usage after deploy:
- *   curl -H "x-secret: <BETTER_AUTH_SECRET>" \
+ *   curl -H
  *        https://vercel-app-nine-omega.vercel.app/api/migrate
  */
 export async function GET(request: Request) {
@@ -16,7 +16,6 @@ export async function GET(request: Request) {
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
   });
 
   try {
