@@ -111,8 +111,8 @@ export default function ProjectSettingsScreen() {
       </View>
 
       <View style={styles.grid}>
-        <ScrollView 
-          horizontal={Platform.OS !== 'web'} 
+        <ScrollView
+          horizontal={Platform.OS !== 'web'}
           showsHorizontalScrollIndicator={false}
           style={styles.sidebar}
           contentContainerStyle={styles.sidebarContent}
@@ -144,9 +144,9 @@ export default function ProjectSettingsScreen() {
               <View style={styles.section}>
                 <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Project Name</GeistText>
                 <GeistText secondary style={{ marginBottom: 16 }}>Used to identify your Project on the Dashboard.</GeistText>
-                
+
                 <View style={{ flexDirection: 'row', gap: 12, maxWidth: 400 }}>
-                  <TextInput 
+                  <TextInput
                     value={projectName}
                     editable={false}
                     style={[styles.input, { borderColor: theme.border, color: theme.text, flex: 1, paddingHorizontal: 12, opacity: 0.7 }]}
@@ -158,7 +158,7 @@ export default function ProjectSettingsScreen() {
               <View style={[styles.section, { borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 32 }]}>
                 <GeistText weight="600" style={{ fontSize: 18, marginBottom: 4 }}>Framework Preset</GeistText>
                 <GeistText secondary style={{ marginBottom: 16 }}>Vercel automatically configures the build settings for most frameworks.</GeistText>
-                
+
                 <View style={[styles.input, { borderColor: theme.border, maxWidth: 400, justifyContent: 'center', paddingHorizontal: 12, opacity: 0.7 }]}>
                   <GeistText>{project?.framework || 'Other'}</GeistText>
                   {Platform.OS === 'web' && <ChevronDown size={20} color={theme.textSecondary} style={{ position: 'absolute', right: 12 }} />}
@@ -167,7 +167,7 @@ export default function ProjectSettingsScreen() {
 
               <View style={[styles.section, { borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 32 }]}>
                 <GeistText weight="600" style={{ color: theme.error, fontSize: 18, marginBottom: 16 }}>Danger Zone</GeistText>
-                
+
                 <View style={[styles.dangerBox, { borderColor: theme.error + '80', backgroundColor: theme.error + '0A' }]}>
                   <View style={{ flex: 1, marginRight: 16, marginBottom: Platform.OS === 'web' ? 0 : 16 }}>
                     <GeistText weight="500" style={{ fontSize: 16, marginBottom: 4 }}>Delete Project</GeistText>
@@ -175,7 +175,7 @@ export default function ProjectSettingsScreen() {
                       The project will be permanently deleted, including its deployments and domains. This action is irreversible.
                     </GeistText>
                   </View>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={handleDeletePress}
                     style={[styles.deleteButton, { backgroundColor: theme.error }]}
@@ -189,7 +189,6 @@ export default function ProjectSettingsScreen() {
         </View>
       </View>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         visible={deleteModalVisible}
         transparent
@@ -377,3 +376,4 @@ const styles = StyleSheet.create({
     minWidth: 80,
   },
 });
+

@@ -339,7 +339,6 @@ const getProjectTimestamp = (proj: any) => {
   );
 };
 
-// Memoized Project Item Card
 const ProjectCard = memo(({
   project,
   theme,
@@ -357,7 +356,7 @@ const ProjectCard = memo(({
   return (
     <View style={styles.cardWrapper}>
       <GeistCard style={styles.card} onPress={onPress}>
-        {/* Top Row: Icon + Name/Domain (Left) and Chevrons (Right) */}
+
         <View style={styles.cardTopRow}>
           <View style={styles.cardTopLeft}>
             <FrameworkIcon
@@ -379,7 +378,6 @@ const ProjectCard = memo(({
           </View>
         </View>
 
-        {/* Middle Row: -o- Commit Node Icon + Commit Message */}
         <View style={styles.cardMiddleRow}>
           <GitCommitNode color={theme.text} />
           <GeistText weight="600" style={styles.commitMessage} numberOfLines={1}>
@@ -387,7 +385,6 @@ const ProjectCard = memo(({
           </GeistText>
         </View>
 
-        {/* Bottom Row: GitHub Icon + Repo Path · Time */}
         <View style={styles.cardBottomRow}>
           <GithubIcon color={theme.textSecondary} />
           <GeistText secondary style={styles.repoMetaText} numberOfLines={1}>
@@ -430,7 +427,7 @@ export default function ProjectsScreen() {
 
   const fetchProjects = useCallback(
     async (isPullToRefresh = false, loadMore = false) => {
-      // Guard against concurrent fetches
+
       if (isFetchingRef.current) return;
       if (loadMore && (!hasMore || !paginationNextRef.current)) return;
 
@@ -467,7 +464,6 @@ export default function ProjectsScreen() {
             ? String(paginationNextRef.current)
             : undefined;
 
-        // Fetch with a generous limit (15) to fill screen and enable silky smooth scrolling
         const result = await vercel.projects.getProjects({
           limit: "15",
           teamId,
@@ -495,7 +491,6 @@ export default function ProjectsScreen() {
           setProjects(list);
         }
 
-        // Determine if more items are available
         if (
           !newPagination?.next ||
           list.length === 0 ||
@@ -549,7 +544,6 @@ export default function ProjectsScreen() {
     }
   }, [loading, loadingMore, hasMore, fetchProjects]);
 
-  // Render Header Component for FlashList
   const renderHeader = useCallback(() => (
     <View style={styles.header}>
       <View>
@@ -574,7 +568,6 @@ export default function ProjectsScreen() {
     </View>
   ), [theme, router]);
 
-  // Render Footer with subtle preloader
   const renderFooter = useCallback(() => {
     if (!loadingMore) return <View style={{ height: 32 }} />;
     return (
@@ -584,7 +577,6 @@ export default function ProjectsScreen() {
     );
   }, [loadingMore, theme.text]);
 
-  // Render Empty Component
   const renderEmpty = useCallback(() => {
     if (loading) return null;
     return (
@@ -596,7 +588,6 @@ export default function ProjectsScreen() {
     );
   }, [loading, error]);
 
-  // Render Project Item
   const renderProjectItem = useCallback(
     ({ item }: { item: any }) => (
       <ProjectCard
@@ -627,7 +618,7 @@ export default function ProjectsScreen() {
           renderItem={renderProjectItem}
           keyExtractor={(item) => item.id || item.name}
           onEndReached={handleEndReached}
-          onEndReachedThreshold={0.6} // Pre-fetches in advance before reaching bottom
+          onEndReachedThreshold={0.6}
           ListHeaderComponent={renderHeader}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmpty}
@@ -645,5 +636,4 @@ export default function ProjectsScreen() {
     </View>
   );
 }
-
 

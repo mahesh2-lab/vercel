@@ -53,7 +53,6 @@ const PreviewCardItem = memo(function PreviewCardItem({
         </View>
       </TouchableOpacity>
 
-      {/* Quick Actions */}
       <View style={[styles.cardActions, { borderTopColor: theme.border + '50' }]}>
         <TouchableOpacity
           style={[styles.promoteBtn, { backgroundColor: '#0070F315', borderColor: '#0070F3' }]}
@@ -251,3 +250,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
+

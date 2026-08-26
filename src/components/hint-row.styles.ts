@@ -12,3 +12,4 @@ export const styles = StyleSheet.create({
     paddingHorizontal: spacing.two,
   },
 });
+

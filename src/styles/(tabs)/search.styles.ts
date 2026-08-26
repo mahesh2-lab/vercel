@@ -20,3 +20,4 @@ export const styles = StyleSheet.create({
     fontSize: moderateScale(15),
   },
 });
+

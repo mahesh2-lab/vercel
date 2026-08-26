@@ -43,13 +43,11 @@ export default function ProjectScreen() {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Redeploy modal state
   const [redeployModalOpen, setRedeployModalOpen] = useState(false);
   const [clearCache, setClearCache] = useState(false);
   const [redeployTarget, setRedeployTarget] = useState<"production" | "preview">("production");
   const [redeploying, setRedeploying] = useState(false);
 
-  // Toast state
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
     visible: false,
     message: "",
@@ -103,7 +101,7 @@ export default function ProjectScreen() {
 
     try {
       if (!token) {
-        // Simulated redeploy
+
         setTimeout(() => {
           setRedeploying(false);
           setRedeployModalOpen(false);
@@ -359,7 +357,6 @@ export default function ProjectScreen() {
         </View>
       </View>
 
-      {/* Redeploy Modal */}
       <Modal
         visible={redeployModalOpen}
         transparent
@@ -385,7 +382,6 @@ export default function ProjectScreen() {
                 Trigger a new build for <GeistText weight="bold">{project?.name || id}</GeistText> from the latest commit.
               </GeistText>
 
-              {/* Target Selector */}
               <GeistText weight="600" style={{ fontSize: 13, marginBottom: 8 }}>
                 Target Environment
               </GeistText>
@@ -419,7 +415,6 @@ export default function ProjectScreen() {
                 })}
               </View>
 
-              {/* Clear Cache Toggle */}
               <TouchableOpacity
                 style={[
                   styles.cacheToggleRow,
@@ -593,3 +588,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+

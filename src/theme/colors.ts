@@ -30,3 +30,4 @@ export const themes = {
 };
 
 export type Theme = typeof themes.light;
+

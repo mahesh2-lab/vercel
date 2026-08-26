@@ -48,7 +48,7 @@ export default function ProjectGitScreen() {
             <GeistSpinner size={36} color={theme.text} />
           </View>
         ) : (
-          <GeistInput 
+          <GeistInput
             value={repo}
             onChangeText={setRepo}
             style={{ marginBottom: 16 }}
@@ -67,5 +67,4 @@ export default function ProjectGitScreen() {
     </ScrollView>
   );
 }
-
 

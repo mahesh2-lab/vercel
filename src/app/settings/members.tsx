@@ -24,7 +24,7 @@ export default function AccountMembersScreen() {
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Invite Member</GeistText>
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <GeistInput 
+          <GeistInput
             value={email}
             onChangeText={setEmail}
             placeholder="Email Address"
@@ -44,5 +44,4 @@ export default function AccountMembersScreen() {
     </ScrollView>
   );
 }
-
 

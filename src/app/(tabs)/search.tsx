@@ -31,7 +31,7 @@ export default function SearchScreen() {
           />
         </View>
       </View>
-      
+
       <ScrollView contentContainerStyle={{ padding: 24, alignItems: 'center', marginTop: 40 }}>
         <SearchIcon size={40} color={theme.textSecondary} style={{ marginBottom: 16, opacity: 0.5 }} />
         <GeistText secondary style={{ textAlign: 'center', fontSize: 14 }}>
@@ -41,5 +41,4 @@ export default function SearchScreen() {
     </View>
   );
 }
-
 

@@ -38,12 +38,10 @@ export default function ProfileScreen() {
   const { user, teams, activeScope, setActiveScope, refreshUser, logout } =
     useUserContext();
 
-
   const [fullUser, setFullUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Toast State
   const [toast, setToast] = useState<{
     visible: boolean;
     message: string;
@@ -61,8 +59,6 @@ export default function ProfileScreen() {
   const fetchProfileData = useCallback(
     async (isPull = false) => {
       const token = getCachedVercelToken();
-
-      
 
       if (!token) {
         setLoading(false);
@@ -134,7 +130,6 @@ export default function ProfileScreen() {
     ]);
   };
 
-
   const activeUser = fullUser || user;
   const username = activeUser?.username || "user";
   const displayName = activeUser?.name || username;
@@ -181,7 +176,6 @@ export default function ProfileScreen() {
         onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
 
-      {/* Header */}
       <View style={styles.header}>
         <View style={{ flex: 1, paddingRight: 16 }}>
           <GeistText weight="bold" style={{ fontSize: 28, marginBottom: 4 }}>
@@ -216,7 +210,7 @@ export default function ProfileScreen() {
         </View>
       ) : (
         <View style={styles.grid}>
-          {/* Main User Card */}
+
           <GeistCard style={[styles.profileCard, { borderColor: theme.border }]}>
             <View style={styles.profileCardTop}>
               <View style={styles.avatarContainer}>
@@ -299,7 +293,6 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            {/* Meta bar */}
             <View
               style={[
                 styles.profileMetaBar,
@@ -380,7 +373,6 @@ export default function ProfileScreen() {
             </View>
           </GeistCard>
 
-          {/* Workspaces & Teams Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View
@@ -397,7 +389,7 @@ export default function ProfileScreen() {
             </View>
 
             <GeistCard style={{ padding: 0, overflow: "hidden" }}>
-              {/* Personal Account Scope */}
+
               <TouchableOpacity
                 style={[
                   styles.scopeRow,
@@ -490,7 +482,6 @@ export default function ProfileScreen() {
                 )}
               </TouchableOpacity>
 
-              {/* Team Scopes */}
               {teams.map((team: VercelTeam, idx: number) => {
                 const isActive =
                   activeScope?.type === "team" && activeScope.id === team.id;
@@ -582,7 +573,6 @@ export default function ProfileScreen() {
             </GeistCard>
           </View>
 
-          {/* Danger Zone */}
           <View
             style={[
               styles.section,
@@ -654,5 +644,4 @@ export default function ProfileScreen() {
     </ScrollView>
   );
 }
-
 

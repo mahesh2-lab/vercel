@@ -41,7 +41,7 @@ export const styles = StyleSheet.create({
     width: scale(8),
     height: verticalScale(8),
     borderRadius: scale(4),
-    backgroundColor: '#EAEAEA', // Will be subtle on both themes
+    backgroundColor: '#EAEAEA',
   },
   previewContent: {
     flex: 1,
@@ -58,3 +58,4 @@ export const styles = StyleSheet.create({
     width: '100%',
   }
 });
+

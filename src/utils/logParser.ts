@@ -1,4 +1,3 @@
-// Log Parser & Syntax Highlighter Utilities for Vercel Build Logs
 
 export type LogLevel = 'all' | 'error' | 'warn' | 'info' | 'success';
 
@@ -11,7 +10,6 @@ export interface ParsedLogLine {
   level: LogLevel;
 }
 
-// Regex to strip ANSI escape codes
 const ANSI_REGEX = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 export function stripAnsi(str: string): string {
@@ -21,7 +19,7 @@ export function stripAnsi(str: string): string {
 
 export function classifyLogLevel(text: string): LogLevel {
   const lower = text.toLowerCase();
-  
+
   if (
     lower.includes('error') ||
     lower.includes('failed') ||
@@ -33,7 +31,7 @@ export function classifyLogLevel(text: string): LogLevel {
   ) {
     return 'error';
   }
-  
+
   if (
     lower.includes('warn') ||
     lower.includes('warning') ||
@@ -42,7 +40,7 @@ export function classifyLogLevel(text: string): LogLevel {
   ) {
     return 'warn';
   }
-  
+
   if (
     lower.includes('✓') ||
     lower.includes('success') ||
@@ -52,7 +50,7 @@ export function classifyLogLevel(text: string): LogLevel {
   ) {
     return 'success';
   }
-  
+
   return 'info';
 }
 
@@ -81,7 +79,6 @@ export function parseRawLogs(events: any[]): ParsedLogLine[] {
   });
 }
 
-// Mock logs generator for simulated builds or when no remote logs are available
 export const MOCK_BUILD_LOGS: { text: string; delay: number }[] = [
   { text: 'Cloning github.com/user/project (Branch: main, Commit: 7f3a1b2)', delay: 200 },
   { text: 'Cloning completed: 842.12ms', delay: 500 },
@@ -110,3 +107,4 @@ export const MOCK_BUILD_LOGS: { text: string; delay: number }[] = [
   { text: 'Uploading build outputs to Vercel Edge Network...', delay: 8900 },
   { text: '✓ Deployed to https://project-alpha.vercel.app', delay: 9400 },
 ];
+

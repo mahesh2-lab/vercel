@@ -107,3 +107,4 @@ export const styles = StyleSheet.create({
     minWidth: scale(80),
   },
 });
+

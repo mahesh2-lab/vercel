@@ -130,3 +130,4 @@ export const styles = StyleSheet.create({
     marginBottom: verticalScale(6),
   },
 });
+

@@ -34,3 +34,4 @@ export const styles = StyleSheet.create({
     paddingVertical: scale(8),
   }
 });
+

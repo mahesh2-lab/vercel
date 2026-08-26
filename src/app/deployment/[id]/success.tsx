@@ -37,7 +37,7 @@ export default function DeploymentSuccessScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <Stack.Screen options={{ title: 'Success', headerShown: false }} />
-      
+
       {loading ? (
         <View style={styles.content}>
           <ActivityIndicator size="large" color={theme.text} />
@@ -45,7 +45,7 @@ export default function DeploymentSuccessScreen() {
       ) : (
         <View style={styles.content}>
           <CheckCircle2 color={theme.success} size={64} style={{ marginBottom: 24 }} />
-          
+
           <GeistText weight="bold" style={{ fontSize: 32, marginBottom: 8, textAlign: 'center' }}>
             Congratulations!
           </GeistText>
@@ -53,7 +53,7 @@ export default function DeploymentSuccessScreen() {
             Your project was successfully deployed.
           </GeistText>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.urlChip, { backgroundColor: theme.surface, borderColor: theme.border }]}
             activeOpacity={0.7}
             onPress={() => {
@@ -64,7 +64,6 @@ export default function DeploymentSuccessScreen() {
             <Copy color={theme.textSecondary} size={16} />
           </TouchableOpacity>
 
-          {/* Mock Preview Screenshot (Still useful as a visual placeholder) */}
           <View style={[styles.previewCard, { borderColor: theme.border }]}>
             <View style={[styles.browserBar, { borderBottomColor: theme.border, backgroundColor: theme.surface }]}>
               <View style={styles.browserDot} />
@@ -79,15 +78,15 @@ export default function DeploymentSuccessScreen() {
           </View>
 
           <View style={styles.actions}>
-            <GeistButton 
-              title="Visit" 
-              onPress={() => Linking.openURL(fullUrl)} 
-              style={{ marginBottom: 12 }} 
+            <GeistButton
+              title="Visit"
+              onPress={() => Linking.openURL(fullUrl)}
+              style={{ marginBottom: 12 }}
             />
-            <GeistButton 
-              title="Back to Dashboard" 
-              secondary 
-              onPress={() => router.replace('/')} 
+            <GeistButton
+              title="Back to Dashboard"
+              secondary
+              onPress={() => router.replace('/')}
             />
           </View>
         </View>
@@ -95,5 +94,4 @@ export default function DeploymentSuccessScreen() {
     </View>
   );
 }
-
 

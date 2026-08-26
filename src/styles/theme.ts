@@ -21,7 +21,7 @@ export const radii = {
   sm: scale(6),
   md: scale(12),
   lg: scale(16),
-  full: 9999, // border radii 9999 usually doesn't need scale since it's just circular
+  full: 9999,
 };
 
 export const typography = {
@@ -59,3 +59,4 @@ export const Fonts = Platform.select({
     mono: 'var(--font-mono)',
   },
 });
+

@@ -23,7 +23,7 @@ export default function AccountGeneralScreen() {
 
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Workspace Name</GeistText>
-        <GeistInput 
+        <GeistInput
           value={activeName}
           onChangeText={setTeamName}
           placeholder="e.g. My Workspace"
@@ -34,7 +34,7 @@ export default function AccountGeneralScreen() {
 
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Workspace Slug</GeistText>
-        <GeistInput 
+        <GeistInput
           value={activeSlug}
           onChangeText={setTeamSlug}
           placeholder="e.g. my-workspace"
@@ -45,5 +45,4 @@ export default function AccountGeneralScreen() {
     </ScrollView>
   );
 }
-
 

@@ -16,40 +16,39 @@ export default function GlobalSettingsScreen() {
 
       <GeistCard style={{ padding: 0, overflow: 'hidden', marginBottom: 24 }}>
         <View style={{ paddingHorizontal: 16 }}>
-          <GeistRow 
-            label="General" 
-            description="Team Name, Slug, Logo" 
-            chevron 
-            onPress={() => router.push('/settings/general')} 
+          <GeistRow
+            label="General"
+            description="Team Name, Slug, Logo"
+            chevron
+            onPress={() => router.push('/settings/general')}
           />
-          <GeistRow 
-            label="Billing" 
-            description="Plan, Invoices, Payment Methods" 
-            chevron 
-            onPress={() => router.push('/settings/billing')} 
+          <GeistRow
+            label="Billing"
+            description="Plan, Invoices, Payment Methods"
+            chevron
+            onPress={() => router.push('/settings/billing')}
           />
-          <GeistRow 
-            label="Members" 
-            description="Invite team members and manage roles" 
-            chevron 
-            onPress={() => router.push('/settings/members')} 
+          <GeistRow
+            label="Members"
+            description="Invite team members and manage roles"
+            chevron
+            onPress={() => router.push('/settings/members')}
           />
-          <GeistRow 
-            label="Security" 
-            description="SSO, 2FA, and access policies" 
-            chevron 
-            onPress={() => router.push('/settings/security')} 
+          <GeistRow
+            label="Security"
+            description="SSO, 2FA, and access policies"
+            chevron
+            onPress={() => router.push('/settings/security')}
           />
-          <GeistRow 
-            label="Tokens" 
-            description="Manage personal access tokens" 
-            chevron 
-            onPress={() => router.push('/settings/tokens')} 
+          <GeistRow
+            label="Tokens"
+            description="Manage personal access tokens"
+            chevron
+            onPress={() => router.push('/settings/tokens')}
           />
         </View>
       </GeistCard>
     </ScrollView>
   );
 }
-
 

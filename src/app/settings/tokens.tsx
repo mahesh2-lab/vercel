@@ -17,7 +17,7 @@ export default function AccountTokensScreen() {
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Create New Token</GeistText>
         <View style={{ flexDirection: 'row', gap: 12 }}>
-          <GeistInput 
+          <GeistInput
             value={tokenName}
             onChangeText={setTokenName}
             placeholder="Token Name (e.g. CLI)"
@@ -37,5 +37,4 @@ export default function AccountTokensScreen() {
     </ScrollView>
   );
 }
-
 

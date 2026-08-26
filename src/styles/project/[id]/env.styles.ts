@@ -56,3 +56,4 @@ export const styles = StyleSheet.create({
     borderRadius: scale(4),
   }
 });
+

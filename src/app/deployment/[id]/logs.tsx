@@ -41,7 +41,6 @@ export default function BuildLogsScreen() {
   const theme = useTheme();
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // States
   const [logs, setLogs] = useState<ParsedLogLine[]>([]);
   const [loading, setLoading] = useState(true);
   const [isLive, setIsLive] = useState(!error);
@@ -49,7 +48,6 @@ export default function BuildLogsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<LogLevel>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Toast state
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
     visible: false,
     message: '',
@@ -60,14 +58,13 @@ export default function BuildLogsScreen() {
     setToast({ visible: true, message, type });
   };
 
-  // Fetch real logs from Vercel API or generate live mock stream
   useEffect(() => {
     let isMounted = true;
     let pollTimer: any = null;
 
     async function fetchLogs() {
       if (error) {
-        // Display specific error failure diagnostics
+
         const errStr = String(error);
         const errLogs: ParsedLogLine[] = [
           {
@@ -137,7 +134,7 @@ export default function BuildLogsScreen() {
     function runMockStream() {
       if (!isMounted) return;
       setLoading(false);
-      
+
       const accumulated: ParsedLogLine[] = [];
       MOCK_BUILD_LOGS.forEach((item, index) => {
         setTimeout(() => {
@@ -180,14 +177,12 @@ export default function BuildLogsScreen() {
     };
   }, [id, error]);
 
-  // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
     if (autoScroll && logs.length > 0) {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   }, [logs, autoScroll]);
 
-  // Counts for each log level
   const counts = useMemo(() => {
     let errorCount = 0;
     let warnCount = 0;
@@ -202,15 +197,13 @@ export default function BuildLogsScreen() {
     return { all: logs.length, error: errorCount, warn: warnCount, info: infoCount };
   }, [logs]);
 
-  // Filtered and searched logs
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
-      // Level filter
+
       if (selectedFilter === 'error' && log.level !== 'error') return false;
       if (selectedFilter === 'warn' && log.level !== 'warn') return false;
       if (selectedFilter === 'info' && (log.level === 'error' || log.level === 'warn')) return false;
 
-      // Search query
       if (searchQuery.trim()) {
         return log.cleanText.toLowerCase().includes(searchQuery.toLowerCase());
       }
@@ -218,20 +211,17 @@ export default function BuildLogsScreen() {
     });
   }, [logs, selectedFilter, searchQuery]);
 
-  // Copy all logs
   const handleCopyAll = async () => {
     const fullText = logs.map((l) => `[${l.time}] ${l.cleanText}`).join('\n');
     await Clipboard.setStringAsync(fullText);
     showToast(`Copied all ${logs.length} log lines to clipboard`);
   };
 
-  // Copy single line
   const handleCopyLine = async (line: ParsedLogLine) => {
     await Clipboard.setStringAsync(line.cleanText);
     showToast(`Copied line #${line.index}`);
   };
 
-  // Share logs
   const handleShare = async () => {
     const fullText = logs.map((l) => `[${l.time}] ${l.cleanText}`).join('\n');
     try {
@@ -244,7 +234,6 @@ export default function BuildLogsScreen() {
     }
   };
 
-  // Helper for rendering line text with search term highlighting
   const renderLogContent = (line: ParsedLogLine) => {
     const text = line.cleanText;
 
@@ -254,7 +243,6 @@ export default function BuildLogsScreen() {
     else if (line.level === 'success') textColor = '#34D399';
     else if (text.startsWith('▲') || text.startsWith('Route (app)')) textColor = '#60A5FA';
 
-    // If there's a search match, highlight matches
     if (searchQuery.trim()) {
       const parts = text.split(new RegExp(`(${searchQuery})`, 'gi'));
       return (
@@ -299,7 +287,6 @@ export default function BuildLogsScreen() {
         onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
 
-      {/* Header section */}
       <View style={[styles.header, { borderBottomColor: theme.border }]}>
         <View style={styles.headerTop}>
           <View style={{ flex: 1 }}>
@@ -326,7 +313,6 @@ export default function BuildLogsScreen() {
             </GeistText>
           </View>
 
-          {/* Action buttons */}
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={[styles.iconButton, { borderColor: theme.border, backgroundColor: theme.surface }]}
@@ -351,7 +337,6 @@ export default function BuildLogsScreen() {
           </View>
         </View>
 
-        {/* Search Bar */}
         <View style={[styles.searchBar, { borderColor: theme.border, backgroundColor: theme.surface }]}>
           <Search size={16} color={theme.textSecondary} style={{ marginRight: 8 }} />
           <TextInput
@@ -370,7 +355,6 @@ export default function BuildLogsScreen() {
           ) : null}
         </View>
 
-        {/* Filter Pills */}
         <View style={styles.filterRow}>
           <TouchableOpacity
             style={[
@@ -465,7 +449,6 @@ export default function BuildLogsScreen() {
         </View>
       </View>
 
-      {/* Terminal View */}
       <View style={styles.terminalWrapper}>
         <ScrollView
           ref={scrollViewRef}
@@ -494,7 +477,7 @@ export default function BuildLogsScreen() {
                 onPress={() => handleCopyLine(line)}
                 style={styles.logRow}
               >
-                {/* Line number gutter */}
+
                 <GeistText
                   mono
                   style={{
@@ -508,7 +491,6 @@ export default function BuildLogsScreen() {
                   {line.index}
                 </GeistText>
 
-                {/* Timestamp */}
                 <GeistText
                   mono
                   style={{
@@ -522,14 +504,12 @@ export default function BuildLogsScreen() {
                   {line.time}
                 </GeistText>
 
-                {/* Content */}
                 <View style={{ flex: 1 }}>{renderLogContent(line)}</View>
               </TouchableOpacity>
             ))
           )}
         </ScrollView>
 
-        {/* Floating Auto-Scroll Controls */}
         <View style={styles.floatingControls}>
           <TouchableOpacity
             activeOpacity={0.8}

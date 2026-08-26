@@ -65,14 +65,12 @@ export default function DeploymentScreen() {
   const theme = useTheme();
   const { activeScope } = useUserContext();
 
-  // Deployment State
   const [deployment, setDeployment] = useState<DeploymentData | null>(null);
-  const [progressStep, setProgressStep] = useState(0); // 0: Queued, 1: Cloning, 2: Building, 3: Domains, 4: Ready
+  const [progressStep, setProgressStep] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isDone, setIsDone] = useState(false);
   const [errorDetails, setErrorDetails] = useState<{ message: string; code?: string } | null>(null);
 
-  // Operational Modals & States
   const [redeployModalOpen, setRedeployModalOpen] = useState(false);
   const [clearCache, setClearCache] = useState(false);
   const [redeployTarget, setRedeployTarget] = useState<'production' | 'preview'>('production');
@@ -86,7 +84,6 @@ export default function DeploymentScreen() {
   const [rollingBack, setRollingBack] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  // Toast State
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
     visible: false,
     message: '',
@@ -97,7 +94,6 @@ export default function DeploymentScreen() {
     setToast({ visible: true, message, type });
   };
 
-  // Timer for elapsed build time
   useEffect(() => {
     if (isDone) return;
     const interval = setInterval(() => {
@@ -106,7 +102,6 @@ export default function DeploymentScreen() {
     return () => clearInterval(interval);
   }, [isDone]);
 
-  // Fetch real deployment from Vercel API with continuous polling for active builds
   const fetchDeploymentDetails = useCallback(async () => {
     const token = getCachedVercelToken();
     if (!token) return null;
@@ -220,7 +215,7 @@ export default function DeploymentScreen() {
           setIsDone(true);
           setProgressStep(4);
         } else {
-          // Still building / queued - Poll every 2.5s
+
           setProgressStep(2);
           if (!pollInterval) {
             pollInterval = setInterval(async () => {
@@ -374,7 +369,6 @@ export default function DeploymentScreen() {
     }
   };
 
-  // 1. Redeploy Functionality
   const executeRedeploy = async () => {
     setRedeploying(true);
     const token = getCachedVercelToken();
@@ -428,7 +422,6 @@ export default function DeploymentScreen() {
     }
   };
 
-  // 2. Promote to Production Functionality
   const handlePromoteToProduction = () => {
     Alert.alert(
       'Promote to Production',
@@ -469,7 +462,6 @@ export default function DeploymentScreen() {
     );
   };
 
-  // 3. Rollback to this Version
   const handleRollback = () => {
     Alert.alert(
       'Rollback Production Traffic',
@@ -503,7 +495,6 @@ export default function DeploymentScreen() {
     );
   };
 
-  // 4. Cancel Active Deployment
   const handleCancel = () => {
     Alert.alert(
       'Cancel Deployment',
@@ -538,7 +529,6 @@ export default function DeploymentScreen() {
     );
   };
 
-  // 5. Assign Custom Domain Alias
   const handleAssignAlias = async () => {
     if (!newAlias.trim()) {
       showToast('Please enter an alias domain', 'error');
@@ -593,7 +583,6 @@ export default function DeploymentScreen() {
         onDismiss={() => setToast((prev) => ({ ...prev, visible: false }))}
       />
 
-      {/* Top Header */}
       <View style={styles.header}>
         <View style={{ flex: 1, marginRight: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
@@ -642,7 +631,6 @@ export default function DeploymentScreen() {
           </View>
         </View>
 
-        {/* Action Header Controls */}
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
           <TouchableOpacity
             activeOpacity={0.7}
@@ -665,7 +653,6 @@ export default function DeploymentScreen() {
         </View>
       </View>
 
-      {/* Prominent Failure Banner if Deployment Failed */}
       {isFailed && (
         <View
           style={[
@@ -730,7 +717,6 @@ export default function DeploymentScreen() {
         </View>
       )}
 
-      {/* Promote to Production Banner for Previews */}
       {!isFailed && deployment?.target !== 'production' && (
         <GeistCard style={[styles.promoteCard, { borderColor: theme.border, backgroundColor: theme.surface }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
@@ -763,7 +749,6 @@ export default function DeploymentScreen() {
         </GeistCard>
       )}
 
-      {/* Live Public Website Banner (Anonymous Access) */}
       {isReady && domainInfo.primaryPublicDomain ? (
         <GeistCard style={{ marginBottom: 24, padding: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
@@ -807,7 +792,6 @@ export default function DeploymentScreen() {
         </GeistCard>
       ) : null}
 
-      {/* Live Build Progress Card */}
       <GeistCard style={{ marginBottom: 24, padding: 0, overflow: 'hidden' }}>
         <View
           style={{
@@ -850,7 +834,7 @@ export default function DeploymentScreen() {
         </View>
 
         <View style={styles.timeline}>
-          {/* Step 0: Setup */}
+
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {progressStep > 0 ? (
               <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
@@ -867,7 +851,6 @@ export default function DeploymentScreen() {
             </View>
           </View>
 
-          {/* Step 1: Cloning */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {progressStep > 1 ? (
               <CheckCircle2 color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
@@ -886,7 +869,6 @@ export default function DeploymentScreen() {
             </View>
           </View>
 
-          {/* Step 2: Building */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {isFailed ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
@@ -911,7 +893,6 @@ export default function DeploymentScreen() {
             </View>
           </View>
 
-          {/* Step 3: Assigning Domains */}
           <View style={[styles.timelineItem, { borderLeftColor: theme.border }]}>
             {isFailed ? (
               <Circle color={theme.textSecondary} size={22} style={[styles.icon, { backgroundColor: theme.card, opacity: 0.3 }]} />
@@ -930,7 +911,6 @@ export default function DeploymentScreen() {
             </View>
           </View>
 
-          {/* Step 4: Ready */}
           <View style={[styles.timelineItem, { borderLeftColor: 'transparent', paddingBottom: 0 }]}>
             {isFailed ? (
               <XCircle color={theme.error} size={22} style={[styles.icon, { backgroundColor: theme.card }]} />
@@ -976,7 +956,6 @@ export default function DeploymentScreen() {
         </View>
       </GeistCard>
 
-      {/* Deployment Metadata & Domains Card */}
       <GeistCard style={{ marginBottom: 24, padding: 20 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <GeistText weight="600" style={{ fontSize: 16 }}>
@@ -1028,9 +1007,9 @@ export default function DeploymentScreen() {
                 activeOpacity={0.7}
                 style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center' }}
               >
-                <GeistText 
-                  mono 
-                  numberOfLines={1} 
+                <GeistText
+                  mono
+                  numberOfLines={1}
                   ellipsizeMode="middle"
                   style={{ color: theme.text, fontSize: 13, marginRight: 6, textAlign: 'right', flexShrink: 1 }}
                 >
@@ -1051,7 +1030,6 @@ export default function DeploymentScreen() {
             </View>
           </View>
 
-          {/* Assigned Public Domains */}
           {domainInfo.allDomains && domainInfo.allDomains.length > 0 && (
             <>
               <View style={[styles.divider, { backgroundColor: theme.border }]} />
@@ -1111,7 +1089,6 @@ export default function DeploymentScreen() {
         </View>
       </GeistCard>
 
-      {/* Bottom Actions */}
       <View style={{ gap: 12 }}>
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <GeistButton
@@ -1171,7 +1148,6 @@ export default function DeploymentScreen() {
         )}
       </View>
 
-      {/* Redeploy Modal */}
       <Modal
         visible={redeployModalOpen}
         transparent
@@ -1197,7 +1173,6 @@ export default function DeploymentScreen() {
                 Trigger a new build from this exact deployment commit.
               </GeistText>
 
-              {/* Target Selector */}
               <GeistText weight="600" style={{ fontSize: 13, marginBottom: 8 }}>
                 Target Environment
               </GeistText>
@@ -1231,7 +1206,6 @@ export default function DeploymentScreen() {
                 })}
               </View>
 
-              {/* Clear Cache Toggle */}
               <TouchableOpacity
                 style={[
                   styles.cacheToggleRow,
@@ -1292,7 +1266,6 @@ export default function DeploymentScreen() {
         </View>
       </Modal>
 
-      {/* Assign Domain Alias Modal */}
       <Modal
         visible={aliasModalOpen}
         transparent
@@ -1592,3 +1565,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+

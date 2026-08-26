@@ -292,3 +292,4 @@ export const styles = StyleSheet.create({
     bottom: 0,
   },
 });
+

@@ -18,15 +18,15 @@ export default function ProjectBuildScreen() {
 
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Build Command</GeistText>
-        <GeistInput 
+        <GeistInput
           value={buildCommand}
           onChangeText={setBuildCommand}
           mono
           style={{ marginBottom: 16 }}
         />
-        
+
         <GeistText weight="600" style={{ marginBottom: 16 }}>Output Directory</GeistText>
-        <GeistInput 
+        <GeistInput
           value={outputDir}
           onChangeText={setOutputDir}
           mono
@@ -34,17 +34,16 @@ export default function ProjectBuildScreen() {
         />
 
         <GeistText weight="600" style={{ marginBottom: 16 }}>Install Command</GeistText>
-        <GeistInput 
+        <GeistInput
           value={installCommand}
           onChangeText={setInstallCommand}
           mono
           style={{ marginBottom: 16 }}
         />
-        
+
         <GeistButton title="Save" onPress={() => {}} />
       </GeistCard>
     </ScrollView>
   );
 }
-
 

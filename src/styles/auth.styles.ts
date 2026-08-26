@@ -47,3 +47,4 @@ export const styles = StyleSheet.create({
     marginTop: verticalScale(2),
   },
 });
+

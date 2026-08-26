@@ -128,7 +128,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const currentToken = getToken(); // read live value, not stale React state
+    const currentToken = getToken();
 
     setTokenState(currentToken);
     setLoading(true);

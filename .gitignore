@@ -53,3 +53,31 @@ DOCKER_GUIDE.md
 
 .vercel
 .env*
+
+# AI Agent files, rules, and configurations
+.agents/
+.gemini/
+.cursor/
+.cursorrules
+.cursorignore
+.windsurf/
+.windsurfrules
+.cline/
+.clinerules
+.claude/
+.copilot/
+.chat/
+.continue/
+.aidev/
+.roo/
+.roorules
+.codeium/
+.prompts/
+.aider*
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+CHAT.md
+*.prompt.md
+*.agent.md
+

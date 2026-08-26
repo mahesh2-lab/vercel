@@ -233,7 +233,6 @@ const FrameworkIcon = ({
     );
   }
 
-  // Default Vercel triangle icon
   return (
     <Svg width="18" height="18" viewBox="0 0 24 24" fill={themeText}>
       <Path d={siVercel.path} />
@@ -277,7 +276,6 @@ export default function AnalyticsScreen() {
   const theme = useTheme();
   const { activeScope } = useUserContext();
 
-  // State: selectedProjectId is null by default so user sees project list
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [projectSearch, setProjectSearch] = useState("");
@@ -286,26 +284,22 @@ export default function AnalyticsScreen() {
   const [metricView, setMetricView] = useState<"pageviews" | "visitors">("pageviews");
   const [activeTab, setActiveTab] = useState<DimensionTab>("pages");
 
-  // Loading & Error States
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isNotEnabled, setIsNotEnabled] = useState(false);
 
-  // Analytics Data
   const [pageviewCounts, setPageviewCounts] = useState<PageviewCountData | null>(null);
   const [customEventCounts, setCustomEventCounts] = useState<CustomEventCountData | null>(null);
   const [timeSeries, setTimeSeries] = useState<TimeSeriesPoint[]>([]);
   const [selectedPointIndex, setSelectedPointIndex] = useState<number | null>(null);
 
-  // Breakdown Data
   const [topPages, setTopPages] = useState<BreakdownItem[]>([]);
   const [topReferrers, setTopReferrers] = useState<BreakdownItem[]>([]);
   const [topCountries, setTopCountries] = useState<BreakdownItem[]>([]);
   const [topDevices, setTopDevices] = useState<BreakdownItem[]>([]);
   const [topEvents, setTopEvents] = useState<BreakdownItem[]>([]);
 
-  // Toast
   const [toast, setToast] = useState<{
     visible: boolean;
     message: string;
@@ -324,7 +318,6 @@ export default function AnalyticsScreen() {
     return projects.find((p) => p.id === selectedProjectId) || null;
   }, [projects, selectedProjectId]);
 
-  // Fetch Projects on Mount or Scope Change
   const fetchProjects = useCallback(async () => {
     setLoadingProjects(true);
     const teamId = activeScope?.type === "team" ? activeScope.id : undefined;
@@ -361,7 +354,6 @@ export default function AnalyticsScreen() {
     fetchProjects();
   }, [fetchProjects]);
 
-  // Fetch Web Analytics Data for Selected Project
   const fetchAnalyticsData = useCallback(
     async (isPull = false) => {
       if (!selectedProjectId) return;
@@ -383,7 +375,7 @@ export default function AnalyticsScreen() {
       const until = Date.now();
 
       try {
-        // 1. Fetch Counts
+
         const [pvCountRes, eventCountRes] = await Promise.allSettled([
           vercel.webAnalytics.countPageviews({
             projectId: selectedProjectId,
@@ -426,7 +418,6 @@ export default function AnalyticsScreen() {
           setCustomEventCounts(null);
         }
 
-        // 2. Fetch Time Series Aggregates
         const timeSeriesRes = await vercel.webAnalytics.aggregatePageviews({
           projectId: selectedProjectId,
           by: [granularity],
@@ -457,7 +448,6 @@ export default function AnalyticsScreen() {
         setTimeSeries(parsedTimeSeries);
         setSelectedPointIndex(null);
 
-        // 3. Fetch Dimension Breakdowns
         const [pagesRes, refRes, countryRes, deviceRes, eventsRes] = await Promise.allSettled([
           vercel.webAnalytics.aggregatePageviews({
             projectId: selectedProjectId,
@@ -559,7 +549,6 @@ export default function AnalyticsScreen() {
     }
   }, [selectedProjectId, timeRange, fetchAnalyticsData]);
 
-  // Filtered Projects for List
   const filteredProjects = useMemo(() => {
     if (!projectSearch.trim()) return projects;
     return projects.filter((p) =>
@@ -567,7 +556,6 @@ export default function AnalyticsScreen() {
     );
   }, [projects, projectSearch]);
 
-  // Chart Calculations
   const maxChartValue = useMemo(() => {
     if (!timeSeries || timeSeries.length === 0) return 10;
     const values = timeSeries.map((pt) =>
@@ -589,9 +577,6 @@ export default function AnalyticsScreen() {
     return (pageviewCounts.pageviews / pageviewCounts.visitors).toFixed(1);
   }, [pageviewCounts]);
 
-  // ==========================================
-  // VIEW 1: PROJECT SELECTION SCREEN (Exact Mockup Match)
-  // ==========================================
   if (!selectedProjectId) {
     return (
       <View style={[styles.staticPageContainer, { backgroundColor: theme.background }]}>
@@ -603,7 +588,7 @@ export default function AnalyticsScreen() {
         />
 
         <View style={styles.projectPickerWrapper}>
-          {/* Top Analytics Box Icon */}
+
           <View
             style={[
               styles.topIconBox,
@@ -619,7 +604,6 @@ export default function AnalyticsScreen() {
             </Svg>
           </View>
 
-          {/* Title and Subtitle */}
           <GeistText weight="bold" style={styles.mainTitle}>
             Continue to Analytics
           </GeistText>
@@ -627,7 +611,6 @@ export default function AnalyticsScreen() {
             Choose a project to continue
           </GeistText>
 
-          {/* Static Find Project Search Input */}
           <View
             style={[
               styles.searchBarWrapper,
@@ -648,7 +631,6 @@ export default function AnalyticsScreen() {
             />
           </View>
 
-          {/* Scrollable Projects List with Bottom Fade Overlay */}
           <View style={styles.scrollListContainer}>
             {loadingProjects ? (
               <View style={{ paddingVertical: 40, alignItems: "center" }}>
@@ -709,7 +691,6 @@ export default function AnalyticsScreen() {
               </ScrollView>
             )}
 
-            {/* Bottom Gradient Fade Overlay */}
             <View style={styles.bottomFadeOverlay} pointerEvents="none">
               <Svg width="100%" height="100%" preserveAspectRatio="none">
                 <Defs>
@@ -730,9 +711,6 @@ export default function AnalyticsScreen() {
     );
   }
 
-  // ==========================================
-  // VIEW 2: FULL ANALYTICS DASHBOARD FOR SELECTED PROJECT
-  // ==========================================
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: theme.background }}
@@ -752,7 +730,6 @@ export default function AnalyticsScreen() {
         onDismiss={() => setToast((t) => ({ ...t, visible: false }))}
       />
 
-      {/* Top Header with Back Navigation & Project Selector */}
       <View style={styles.dashboardHeader}>
         <TouchableOpacity
           style={[
@@ -788,7 +765,6 @@ export default function AnalyticsScreen() {
           </View>
         </View>
 
-        {/* Change Project Quick Button */}
         <TouchableOpacity
           style={[
             styles.switchProjectPill,
@@ -804,7 +780,6 @@ export default function AnalyticsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Time Range and Metric Controls */}
       <View style={styles.controlRow}>
         <View
           style={[
@@ -840,7 +815,6 @@ export default function AnalyticsScreen() {
           })}
         </View>
 
-        {/* Metric Toggle for Chart */}
         <View
           style={[
             styles.metricToggle,
@@ -885,13 +859,12 @@ export default function AnalyticsScreen() {
         </View>
       </View>
 
-      {/* Main Content Loading / Disabled / Active */}
       {loadingAnalytics && !refreshing ? (
         <View style={styles.loadingContainer}>
           <GeistSpinner size={28} color={theme.text} />
         </View>
       ) : isNotEnabled ? (
-        /* Web Analytics Not Enabled State */
+
         <GeistCard style={styles.disabledCard}>
           <View style={[styles.disabledIconWrap, { backgroundColor: theme.surface }]}>
             <Activity size={32} color={theme.textSecondary} />
@@ -923,11 +896,11 @@ export default function AnalyticsScreen() {
           </View>
         </GeistCard>
       ) : (
-        /* Active Web Analytics Content */
+
         <View style={styles.content}>
-          {/* Key Metric Cards */}
+
           <View style={styles.metricsGrid}>
-            {/* 1. Unique Visitors */}
+
             <GeistCard style={styles.metricCard}>
               <View style={styles.metricHeaderRow}>
                 <GeistText secondary style={{ fontSize: 13, fontWeight: "500" }}>
@@ -945,7 +918,6 @@ export default function AnalyticsScreen() {
               </GeistText>
             </GeistCard>
 
-            {/* 2. Total Pageviews */}
             <GeistCard style={styles.metricCard}>
               <View style={styles.metricHeaderRow}>
                 <GeistText secondary style={{ fontSize: 13, fontWeight: "500" }}>
@@ -966,7 +938,6 @@ export default function AnalyticsScreen() {
               </View>
             </GeistCard>
 
-            {/* 3. Views per Visitor */}
             <GeistCard style={styles.metricCard}>
               <View style={styles.metricHeaderRow}>
                 <GeistText secondary style={{ fontSize: 13, fontWeight: "500" }}>
@@ -984,7 +955,6 @@ export default function AnalyticsScreen() {
               </GeistText>
             </GeistCard>
 
-            {/* 4. Custom Events */}
             <GeistCard style={styles.metricCard}>
               <View style={styles.metricHeaderRow}>
                 <GeistText secondary style={{ fontSize: 13, fontWeight: "500" }}>
@@ -1005,7 +975,6 @@ export default function AnalyticsScreen() {
             </GeistCard>
           </View>
 
-          {/* Time Series Traffic Chart */}
           <GeistCard style={styles.chartCard}>
             <View style={styles.chartCardHeader}>
               <View>
@@ -1058,7 +1027,6 @@ export default function AnalyticsScreen() {
                     </SvgGradient>
                   </Defs>
 
-                  {/* Horizontal Guideline 1 */}
                   <Line
                     x1="0"
                     y1="30"
@@ -1068,7 +1036,7 @@ export default function AnalyticsScreen() {
                     strokeDasharray="4,4"
                     strokeWidth="1"
                   />
-                  {/* Horizontal Guideline 2 */}
+
                   <Line
                     x1="0"
                     y1="85"
@@ -1078,7 +1046,7 @@ export default function AnalyticsScreen() {
                     strokeDasharray="4,4"
                     strokeWidth="1"
                   />
-                  {/* Horizontal Guideline 3 */}
+
                   <Line
                     x1="0"
                     y1="140"
@@ -1089,7 +1057,6 @@ export default function AnalyticsScreen() {
                     strokeWidth="1"
                   />
 
-                  {/* Bars */}
                   {timeSeries.map((pt, idx) => {
                     const totalBars = timeSeries.length;
                     const availableWidth = 480;
@@ -1145,7 +1112,6 @@ export default function AnalyticsScreen() {
             )}
           </GeistCard>
 
-          {/* Breakdown Section with Segmented Tabs */}
           <View style={styles.breakdownSection}>
             <View style={styles.breakdownHeader}>
               <GeistText weight="bold" style={{ fontSize: 18 }}>
@@ -1156,7 +1122,6 @@ export default function AnalyticsScreen() {
               </GeistText>
             </View>
 
-            {/* Segmented Dimension Tabs */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -1203,7 +1168,6 @@ export default function AnalyticsScreen() {
               })}
             </ScrollView>
 
-            {/* Dimension Breakdown Card */}
             <GeistCard style={{ padding: 0, overflow: "hidden" }}>
               {activeTab === "pages" && (
                 <BreakdownList
@@ -1298,7 +1262,6 @@ export default function AnalyticsScreen() {
   );
 }
 
-// Subcomponent for rendering breakdown rows with proportional progress bars
 function BreakdownList({
   items,
   emptyMessage,
@@ -1339,7 +1302,7 @@ function BreakdownList({
               },
             ]}
           >
-            {/* Background Relative Fill Bar */}
+
             <View
               style={[
                 styles.relativeProgressFill,
@@ -1350,7 +1313,6 @@ function BreakdownList({
               ]}
             />
 
-            {/* Left Info */}
             <View style={{ flex: 1, paddingRight: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <GeistText secondary style={{ fontSize: 11, width: 18, fontWeight: "600" }}>
@@ -1360,7 +1322,6 @@ function BreakdownList({
               </View>
             </View>
 
-            {/* Right Counts */}
             <View style={{ alignItems: "flex-end" }}>
               <GeistText weight="bold" style={{ fontSize: 13 }}>
                 {item.pageviews.toLocaleString()}
@@ -1375,5 +1336,4 @@ function BreakdownList({
     </View>
   );
 }
-
 

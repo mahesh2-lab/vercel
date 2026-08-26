@@ -19,7 +19,7 @@ export default function ProjectGeneralScreen() {
 
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Project Name</GeistText>
-        <GeistInput 
+        <GeistInput
           value={projectName}
           onChangeText={setProjectName}
           placeholder="Project Name"
@@ -30,7 +30,7 @@ export default function ProjectGeneralScreen() {
 
       <GeistCard style={{ marginBottom: 24 }}>
         <GeistText weight="600" style={{ marginBottom: 16 }}>Framework Preset</GeistText>
-        <GeistInput 
+        <GeistInput
           value={framework}
           onChangeText={setFramework}
           placeholder="Framework"
@@ -41,5 +41,4 @@ export default function ProjectGeneralScreen() {
     </ScrollView>
   );
 }
-
 

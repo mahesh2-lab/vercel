@@ -31,4 +31,3 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   );
 }
 
-

@@ -105,7 +105,6 @@ export const FRAMEWORK_PRESETS: FrameworkConfig[] = [
   { name: 'Other',           slug: 'other',            command: 'npm run build', output: 'public',      iconPath: siGithub.path,    iconColor: '#888888' },
 ];
 
-/** Tiny helper that renders a framework's simple-icon SVG */
 export const FrameworkSvgIcon = ({ preset, size = 20, themeText }: { preset: FrameworkConfig; size?: number; themeText: string }) => {
   const color = preset.slug === 'nextjs' || preset.slug === 'remix' ? themeText : preset.iconColor;
   return (
@@ -115,7 +114,6 @@ export const FrameworkSvgIcon = ({ preset, size = 20, themeText }: { preset: Fra
   );
 };
 
-// Robust .env parser
 export function parseDotEnv(content: string): DeployEnvVar[] {
   const lines = content.split(/\r?\n/);
   const vars: DeployEnvVar[] = [];
@@ -165,13 +163,12 @@ export default function DeployScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   const [repoPage, setRepoPage] = useState(1);
   const [hasMoreRepos, setHasMoreRepos] = useState(true);
   const [loadingMoreRepos, setLoadingMoreRepos] = useState(false);
   const loadingMoreReposRef = useRef(false);
 
-  // Step 2 configuration state
   const [selectedRepo, setSelectedRepo] = useState<GitRepository | null>(null);
   const [projectName, setProjectName] = useState('');
   const [framework, setFramework] = useState('Next.js');
@@ -182,7 +179,6 @@ export default function DeployScreen() {
   const [autoDetectedBadge, setAutoDetectedBadge] = useState<string | null>(null);
   const [frameworkModalOpen, setFrameworkModalOpen] = useState(false);
 
-  // Environment Variables state
   const [envAccordionOpen, setEnvAccordionOpen] = useState(false);
   const [envVars, setEnvVars] = useState<DeployEnvVar[]>([]);
   const [newKey, setNewKey] = useState('');
@@ -196,7 +192,6 @@ export default function DeployScreen() {
   const [rawEnvText, setRawEnvText] = useState('');
   const [showValues, setShowValues] = useState<Record<string, boolean>>({});
 
-  // Deployment Error & Toast state
   const [deployError, setDeployError] = useState<{
     message: string;
     code?: string;
@@ -224,7 +219,6 @@ export default function DeployScreen() {
     return `${Math.floor(diff / 604800)}w ago`;
   };
 
-  // Fetch repositories from GitHub / Vercel
   const fetchRepositories = useCallback(async (isPullToRefresh = false, loadMore = false, query = '') => {
     if (loadMore) {
       if (loadingMoreReposRef.current || !hasMoreRepos) return;
@@ -248,12 +242,12 @@ export default function DeployScreen() {
         try {
           const trimmedQuery = query.trim();
           let endpoint = '';
-          
+
           if (trimmedQuery) {
-            // Search API
+
             endpoint = `https://api.github.com/search/repositories?q=${encodeURIComponent(trimmedQuery)}+user:${username}&sort=updated&per_page=${perPage}&page=${targetPage}`;
           } else {
-            // User Repos API
+
             endpoint = `https://api.github.com/users/${username}/repos?sort=updated&per_page=${perPage}&page=${targetPage}`;
           }
 
@@ -261,7 +255,7 @@ export default function DeployScreen() {
           if (ghRes.ok) {
             const ghData = await ghRes.json();
             const list = trimmedQuery ? ghData.items : ghData;
-            
+
             if (Array.isArray(list)) {
               loadedRepos = list.map((r: any) => ({
                 id: String(r.id),
@@ -281,7 +275,6 @@ export default function DeployScreen() {
         }
       }
 
-      // If loadMore, append. Else, replace.
       if (loadMore) {
         setRepos(prev => {
           const existingIds = new Set(prev.map(p => p.id));
@@ -310,14 +303,13 @@ export default function DeployScreen() {
     }
   }, [user?.username, repoPage, hasMoreRepos]);
 
-  // Debounced Search Effect
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Re-fetch when searchQuery changes (pass false for isPullToRefresh and loadMore)
+
       fetchRepositories(false, false, searchQuery);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchQuery]); // Note: removing fetchRepositories from dependencies here to prevent loops on page change
+  }, [searchQuery]);
 
   const onRefresh = () => {
     fetchRepositories(true, false, searchQuery);
@@ -326,7 +318,7 @@ export default function DeployScreen() {
   const handleScroll = (event: any) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
     const isCloseToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 400;
-    
+
     if (isCloseToBottom && !loading && !loadingMoreReposRef.current && hasMoreRepos) {
       fetchRepositories(false, true, searchQuery);
     }
@@ -344,29 +336,27 @@ export default function DeployScreen() {
     );
   }, [repos, searchQuery]);
 
-  // Apply a preset configuration
   const applyPreset = (preset: FrameworkConfig) => {
     setFramework(preset.name);
     setCommand(preset.command);
     setOutput(preset.output);
   };
 
-  // Intelligent Automatic Framework Detection
   const detectFrameworkFromRepo = async (repo: GitRepository) => {
     setDetectingFramework(true);
     let detectedPreset: FrameworkConfig | null = null;
     let customBuildScript: string | null = null;
 
     try {
-      // 1. Attempt to fetch package.json from GitHub
+
       const branch = repo.defaultBranch || 'main';
       const pkgUrl = `https://raw.githubusercontent.com/${repo.fullName}/${branch}/package.json`;
-      
+
       const pkgRes = await fetch(pkgUrl);
       if (pkgRes.ok) {
         const pkg = await pkgRes.json();
         const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
-        
+
         if (pkg.scripts?.build) {
           customBuildScript = `npm run build`;
         }
@@ -397,7 +387,6 @@ export default function DeployScreen() {
       console.warn('Direct package.json inspection error:', e);
     }
 
-    // 2. Fallback heuristic detection using repository name & language
     if (!detectedPreset) {
       const nameLower = repo.name.toLowerCase();
       const langLower = (repo.language || '').toLowerCase();
@@ -423,7 +412,6 @@ export default function DeployScreen() {
       }
     }
 
-    // Apply auto-detected configuration
     applyPreset(detectedPreset);
     if (customBuildScript) {
       setCommand(customBuildScript);
@@ -441,7 +429,6 @@ export default function DeployScreen() {
     await detectFrameworkFromRepo(repo);
   };
 
-  // Environment variable handlers
   const handleAddEnvVar = () => {
     if (!newKey.trim()) {
       showToast('Please specify an environment variable key', 'error');
@@ -524,7 +511,7 @@ export default function DeployScreen() {
           fileContent = await res.text();
         }
       } else {
-        // Native Android / iOS File Manager storage access
+
         try {
           fileContent = await FileSystem.readAsStringAsync(asset.uri, {
             encoding: FileSystem.EncodingType.UTF8,
@@ -557,7 +544,6 @@ export default function DeployScreen() {
     }
   };
 
-  // Real Vercel Deployment Trigger
   const handleDeploy = async () => {
     setDeploying(true);
     setDeployError(null);
@@ -594,7 +580,6 @@ export default function DeployScreen() {
       const matchedConfig = FRAMEWORK_PRESETS.find((p) => p.name === framework);
       const frameworkSlug = matchedConfig ? matchedConfig.slug : framework.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-      // 1. Create or sync project on Vercel
       try {
         const { createProject } = require('../../lib/vercel-api');
         await createProject(queryParam, {
@@ -617,7 +602,6 @@ export default function DeployScreen() {
         console.warn('Project creation/sync info:', projErr);
       }
 
-      // 2. Build gitSource payload
       const gitSourcePayload: any = {
         type: 'github',
         repo: repoFullName,
@@ -645,7 +629,6 @@ export default function DeployScreen() {
         }, {} as Record<string, string>);
       }
 
-      // 3. Trigger Deployment via Vercel API
       const { createDeployment } = require('../../lib/vercel-api');
       const res = await createDeployment(queryParam, deploymentPayload);
 
@@ -739,7 +722,7 @@ export default function DeployScreen() {
               borderColor: theme.border,
             }}
           >
-            {/* Search and Refresh Bar */}
+
             <View
               style={{
                 padding: 16,
@@ -771,7 +754,6 @@ export default function DeployScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Repositories List */}
             {loading ? (
               <View style={{ padding: 48, alignItems: 'center', justifyContent: 'center' }}>
                 <ActivityIndicator size="small" color={theme.text} />
@@ -838,7 +820,7 @@ export default function DeployScreen() {
                     </TouchableOpacity>
                   </View>
                 ))}
-                
+
                 {loadingMoreRepos && (
                   <View style={{ padding: 20, alignItems: 'center' }}>
                     <ActivityIndicator size="small" color={theme.text} />
@@ -879,7 +861,6 @@ export default function DeployScreen() {
           )}
         </View>
 
-        {/* Project & Framework preset */}
         <GeistCard style={{ marginBottom: 24, padding: 24 }}>
           <View style={styles.field}>
             <GeistText secondary style={styles.label}>
@@ -888,7 +869,6 @@ export default function DeployScreen() {
             <GeistInput value={projectName} onChangeText={setProjectName} />
           </View>
 
-          {/* Framework Preset with Auto-Detection & Dropdown */}
           <View style={styles.field}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
               <GeistText secondary style={styles.label}>
@@ -936,7 +916,6 @@ export default function DeployScreen() {
           </View>
         </GeistCard>
 
-        {/* Build & Output Settings */}
         <GeistCard style={{ marginBottom: 24, padding: 24 }}>
           <View
             style={{
@@ -991,7 +970,6 @@ export default function DeployScreen() {
           </View>
         </GeistCard>
 
-        {/* Environment Variables Accordion */}
         <GeistCard style={{ marginBottom: 24, padding: 0, overflow: 'hidden' }}>
           <TouchableOpacity
             style={{
@@ -1039,7 +1017,6 @@ export default function DeployScreen() {
                 In order to provide your deployment with environment variables at build or runtime, specify them below.
               </GeistText>
 
-              {/* Action Buttons: Select .env from Storage / Paste Raw Text */}
               <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 <TouchableOpacity
                   style={[
@@ -1070,7 +1047,6 @@ export default function DeployScreen() {
                 </TouchableOpacity>
               </View>
 
-              {/* Bulk .env Paste Box */}
               {showRawEnvInput && (
                 <View
                   style={{
@@ -1111,7 +1087,6 @@ export default function DeployScreen() {
                 </View>
               )}
 
-              {/* Manual Entry Form */}
               <View
                 style={{
                   backgroundColor: theme.card,
@@ -1152,7 +1127,6 @@ export default function DeployScreen() {
                     />
                   </View>
 
-                  {/* Target Environment Selectors */}
                   <View>
                     <GeistText secondary style={{ fontSize: 12, marginBottom: 6 }}>
                       Target Environments
@@ -1203,7 +1177,6 @@ export default function DeployScreen() {
                 </View>
               </View>
 
-              {/* Configured Variables List */}
               {envVars.length > 0 ? (
                 <View style={{ borderTopWidth: 1, borderTopColor: theme.border, paddingTop: 16 }}>
                   <GeistText weight="600" style={{ fontSize: 14, marginBottom: 12 }}>
@@ -1285,7 +1258,6 @@ export default function DeployScreen() {
           )}
         </GeistCard>
 
-        {/* Deployment Failure Alert Banner */}
         {deployError && (
           <View
             style={[
@@ -1335,7 +1307,6 @@ export default function DeployScreen() {
           </View>
         )}
 
-        {/* Deploy & Cancel Action Row */}
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 8 }}>
           <GeistButton
             title="Cancel"
@@ -1352,7 +1323,6 @@ export default function DeployScreen() {
         </View>
       </ScrollView>
 
-      {/* Framework Selection Modal */}
       <Modal
         visible={frameworkModalOpen}
         transparent
@@ -1416,5 +1386,4 @@ export default function DeployScreen() {
     </KeyboardAvoidingView>
   );
 }
-
 

@@ -16,8 +16,6 @@ import {
 import Svg, { Rect } from 'react-native-svg';
 import { themes } from '../theme/colors';
 
-// Font configuration
-// We use system fonts for a native feel, but styled to emulate Geist and Geist Mono.
 const sansFamily = Platform.select({ ios: 'System', android: 'sans-serif' });
 const monoFamily = Platform.select({ ios: 'Menlo', android: 'monospace' });
 
@@ -140,13 +138,13 @@ export function GeistText({
   maxFontSizeMultiplier?: number;
 }) {
   const theme = useTheme();
-  
+
   const baseStyle: TextStyle = {
     fontFamily: mono ? monoFamily : sansFamily,
     color: secondary ? theme.textSecondary : theme.text,
     fontWeight: weight === 'normal' ? '400' : weight === '500' ? '500' : weight === '600' ? '600' : 'bold',
     fontSize: moderateScale(14),
-    letterSpacing: mono ? 0 : -0.2, // Tighter letter spacing for sans
+    letterSpacing: mono ? 0 : -0.2,
   };
 
   return (
@@ -214,7 +212,7 @@ export function GeistButton({
   suffix?: React.ReactNode;
 }) {
   const theme = useTheme();
-  
+
   const containerStyle: ViewStyle = {
     backgroundColor: secondary ? theme.background : theme.primary,
     borderColor: secondary ? theme.border : theme.primary,
@@ -228,7 +226,7 @@ export function GeistButton({
     flexDirection: 'row',
     opacity: loading ? 0.7 : 1,
   };
-  
+
   const finalTextStyle: TextStyle = {
     color: secondary ? theme.text : theme.primaryText,
     fontWeight: '500',
@@ -244,9 +242,9 @@ export function GeistButton({
     >
       {loading && (
         <View style={{ marginRight: 8 }}>
-          <GeistSpinner 
-            size={16} 
-            color={secondary ? theme.text : theme.primaryText} 
+          <GeistSpinner
+            size={16}
+            color={secondary ? theme.text : theme.primaryText}
           />
         </View>
       )}
@@ -265,13 +263,13 @@ export function GeistButton({
 
 export function StatusBadge({ status }: { status: 'Ready' | 'Building' | 'Failed' | 'Queued' | 'Installing' | 'Canceled' }) {
   const theme = useTheme();
-  
+
   let dotColor = theme.textSecondary;
-  
+
   if (status === 'Ready') {
-    dotColor = theme.text; // Clean, neutral dot instead of blue
+    dotColor = theme.text;
   } else if (status === 'Building' || status === 'Installing' || status === 'Queued') {
-    dotColor = '#F5A623'; // Amber
+    dotColor = '#F5A623';
   } else if (status === 'Failed') {
     dotColor = theme.error;
   } else if (status === 'Canceled') {
@@ -386,3 +384,4 @@ export function GeistInput(props: TextInputProps & { mono?: boolean }) {
     />
   );
 }
+

@@ -59,7 +59,6 @@ export interface ActivityDeployment {
   computedTimeStr: string;
 }
 
-// Ultra-fast memoized deployment card item to prevent re-renders on filter/search changes
 const DeploymentCardItem = memo(
   ({
     dep,
@@ -76,7 +75,7 @@ const DeploymentCardItem = memo(
 
     return (
       <GeistCard style={styles.card} onPress={() => onPress(dep.uid)}>
-        {/* Top Header Row */}
+
         <View style={styles.cardHeader}>
           <View
             style={{
@@ -126,7 +125,6 @@ const DeploymentCardItem = memo(
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <StatusBadge status={dep.computedStatus} />
 
-            {/* Instant-response 3-Dot Menu Button with expanded touch slop */}
             <TouchableOpacity
               style={[
                 styles.threeDotBtn,
@@ -147,7 +145,6 @@ const DeploymentCardItem = memo(
           </View>
         </View>
 
-        {/* Commit Message */}
         <GeistText
           weight="500"
           numberOfLines={2}
@@ -156,7 +153,6 @@ const DeploymentCardItem = memo(
           {dep.meta?.githubCommitMessage || 'Initial Project Deployment'}
         </GeistText>
 
-        {/* Card Footer Metadata */}
         <View style={styles.cardFooter}>
           <View
             style={{
@@ -213,17 +209,14 @@ export default function ActivityScreen() {
   const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>('ALL');
   const [projectDropdownOpen, setProjectDropdownOpen] = useState(false);
 
-  // 3-Dot Action Menu Modal State
   const [activeMenuDeployment, setActiveMenuDeployment] = useState<ActivityDeployment | null>(null);
   const [actionMenuOpen, setActionMenuOpen] = useState(false);
 
-  // Redeploy Modal State
   const [redeployModalOpen, setRedeployModalOpen] = useState(false);
   const [clearCache, setClearCache] = useState(false);
   const [redeployTarget, setRedeployTarget] = useState<'production' | 'preview'>('production');
   const [redeploying, setRedeploying] = useState(false);
 
-  // Toast State
   const [toast, setToast] = useState<{ visible: boolean; message: string; type: ToastType }>({
     visible: false,
     message: '',
@@ -342,7 +335,6 @@ export default function ActivityScreen() {
         setDeployments(formatted);
       }
 
-      // Prevent infinite loop if API returns the same cursor or no cursor
       if (
         !newPagination?.next ||
         (loadMore && paginationNextRef.current === String(newPagination?.next))
@@ -385,7 +377,6 @@ export default function ActivityScreen() {
     fetchDeployments(true);
   }, [fetchDeployments]);
 
-  // Extract unique project list with counts
   const projectListWithCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     deployments.forEach((d) => {
@@ -401,7 +392,6 @@ export default function ActivityScreen() {
     ];
   }, [deployments]);
 
-  // Filtered deployment list
   const filteredDeployments = useMemo(() => {
     return deployments.filter((d) => {
       const matchProject =
@@ -423,7 +413,6 @@ export default function ActivityScreen() {
     });
   }, [deployments, selectedProjectFilter, searchQuery]);
 
-  // Instant response 3-dot configure menu opener
   const handleOpenActionMenu = useCallback((dep: ActivityDeployment) => {
     setActiveMenuDeployment(dep);
     setRedeployTarget((dep.target as any) === 'preview' ? 'preview' : 'production');
@@ -456,11 +445,10 @@ export default function ActivityScreen() {
         await WebBrowser.openBrowserAsync(full);
       }
     } catch {
-      // Fallback
+
     }
   };
 
-  // Promote to Production
   const handlePromote = () => {
     if (!activeMenuDeployment) return;
     const targetDep = activeMenuDeployment;
@@ -496,7 +484,6 @@ export default function ActivityScreen() {
     );
   };
 
-  // Rollback to this deployment
   const handleRollback = () => {
     if (!activeMenuDeployment) return;
     const targetDep = activeMenuDeployment;
@@ -528,7 +515,6 @@ export default function ActivityScreen() {
     );
   };
 
-  // Cancel build
   const handleCancelDeployment = () => {
     if (!activeMenuDeployment) return;
     const targetDep = activeMenuDeployment;
@@ -567,7 +553,6 @@ export default function ActivityScreen() {
     );
   };
 
-  // Execute Redeploy
   const executeRedeploy = async () => {
     if (!activeMenuDeployment) return;
     setRedeploying(true);
@@ -628,10 +613,9 @@ export default function ActivityScreen() {
       ? 'All Projects'
       : selectedProjectFilter;
 
-  // Render header component for FlatList
   const renderHeader = () => (
     <View>
-      {/* Title & Refresh Row */}
+
       <View style={styles.header}>
         <View>
           <GeistText weight="bold" style={{ fontSize: 28 }}>
@@ -644,9 +628,8 @@ export default function ActivityScreen() {
 
       </View>
 
-      {/* Side-by-Side Controls: Search Bar + Project Dropdown Filter */}
       <View style={styles.controlsRow}>
-        {/* Search Bar */}
+
         <View
           style={[
             styles.searchBar,
@@ -677,7 +660,6 @@ export default function ActivityScreen() {
           ) : null}
         </View>
 
-        {/* Project Dropdown Trigger Button */}
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => setProjectDropdownOpen(true)}
@@ -716,7 +698,7 @@ export default function ActivityScreen() {
         data={filteredDeployments}
         keyExtractor={(item) => item.uid}
         numColumns={numColumns}
-        key={`${numColumns}`} // Force re-render when columns change
+        key={`${numColumns}`}
         renderItem={({ item }) => (
           <DeploymentCardItem
             dep={item}
@@ -767,7 +749,6 @@ export default function ActivityScreen() {
         }
       />
 
-      {/* Project Selector Dropdown Modal */}
       <Modal
         visible={projectDropdownOpen}
         transparent
@@ -843,7 +824,6 @@ export default function ActivityScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* 3-Dot Action Sheet / Modal */}
       <Modal
         visible={actionMenuOpen}
         transparent
@@ -856,7 +836,7 @@ export default function ActivityScreen() {
           onPress={() => setActionMenuOpen(false)}
         >
           <View style={[styles.modalCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            {/* Modal Header */}
+
             <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
               <View style={{ flex: 1, marginRight: 16 }}>
                 <GeistText weight="bold" style={{ fontSize: 16 }}>
@@ -876,9 +856,8 @@ export default function ActivityScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Action Items List */}
             <View style={{ paddingVertical: 8 }}>
-              {/* 1. Redeploy */}
+
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={() => {
@@ -898,7 +877,6 @@ export default function ActivityScreen() {
                 </View>
               </TouchableOpacity>
 
-              {/* 2. View Deployment Timeline */}
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={() => {
@@ -920,7 +898,6 @@ export default function ActivityScreen() {
                 </View>
               </TouchableOpacity>
 
-              {/* 3. Visit Live */}
               <TouchableOpacity
                 style={styles.menuActionItem}
                 onPress={handleVisit}
@@ -936,7 +913,7 @@ export default function ActivityScreen() {
                   </GeistText>
                 </View>
               </TouchableOpacity>
-              {/* 4. Cancel Deployment (if building) */}
+
               {activeMenuDeployment?.computedStatus === 'Building' && (
                 <TouchableOpacity
                   style={styles.menuActionItem}
@@ -959,7 +936,6 @@ export default function ActivityScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Redeploy Modal */}
       <Modal
         visible={redeployModalOpen}
         transparent
@@ -985,7 +961,6 @@ export default function ActivityScreen() {
                 Trigger a new build for <GeistText weight="bold">{activeMenuDeployment?.name}</GeistText> from this exact commit.
               </GeistText>
 
-              {/* Target Selector */}
               <GeistText weight="600" style={{ fontSize: 13, marginBottom: 8 }}>
                 Target Environment
               </GeistText>
@@ -1019,7 +994,6 @@ export default function ActivityScreen() {
                 })}
               </View>
 
-              {/* Clear Cache Toggle */}
               <TouchableOpacity
                 style={[
                   styles.cacheToggleRow,
@@ -1082,5 +1056,4 @@ export default function ActivityScreen() {
     </View>
   );
 }
-
 

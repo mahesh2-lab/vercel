@@ -41,7 +41,7 @@ export function VercelHeader() {
       ]}
     >
       <View style={styles.content}>
-        {/* Left Side: Vercel Logo */}
+
         <TouchableOpacity
           style={styles.logoContainer}
           activeOpacity={0.7}
@@ -52,7 +52,6 @@ export function VercelHeader() {
           </Svg>
         </TouchableOpacity>
 
-        {/* Middle: Context Switcher */}
         <TouchableOpacity
           style={styles.contextSwitcher}
           activeOpacity={0.7}
@@ -64,7 +63,6 @@ export function VercelHeader() {
           <ChevronDown color={theme.textSecondary} size={16} style={{ marginLeft: 4 }} />
         </TouchableOpacity>
 
-        {/* Right Side: Avatar */}
         <TouchableOpacity
           style={styles.avatarContainer}
           activeOpacity={0.7}
@@ -78,7 +76,6 @@ export function VercelHeader() {
         </TouchableOpacity>
       </View>
 
-      {/* Scope Switcher Modal */}
       <Modal
         visible={modalVisible}
         transparent
@@ -110,7 +107,7 @@ export function VercelHeader() {
             </View>
 
             <ScrollView style={{ maxHeight: 300 }}>
-              {/* Personal Account */}
+
               {user && (
                 <TouchableOpacity
                   activeOpacity={0.7}
@@ -146,7 +143,6 @@ export function VercelHeader() {
                 </TouchableOpacity>
               )}
 
-              {/* Teams */}
               {teams.map((team: VercelTeam) => {
                 const isSelected = activeScope?.id === team.id;
                 return (
@@ -189,5 +185,4 @@ export function VercelHeader() {
     </View>
   );
 }
-
 

@@ -139,7 +139,6 @@ const DeploymentRowItem = memo(function DeploymentRowItem({
         </View>
       </TouchableOpacity>
 
-      {/* Action Buttons Bar */}
       <View
         style={{
           flexDirection: 'row',
@@ -340,14 +339,14 @@ export default function ProjectDeploymentsScreen() {
         <GeistCard style={{ padding: 0, overflow: 'hidden', flex: 1 }}>
           <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border, flexDirection: 'row', alignItems: 'center' }}>
             <Search size={20} color={theme.textSecondary} style={{ marginRight: 12 }} />
-            <GeistInput 
+            <GeistInput
               placeholder="Search deployments..."
               value={searchQuery}
               onChangeText={setSearchQuery}
               style={{ borderWidth: 0, backgroundColor: 'transparent', paddingVertical: 0, paddingHorizontal: 0, flex: 1, fontSize: 16 }}
             />
           </View>
-          
+
           {loading ? (
             <View style={{ padding: 40, alignItems: 'center' }}>
               <ActivityIndicator size="large" color={theme.text} />
@@ -413,3 +412,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
 });
+

@@ -6,11 +6,10 @@ import { GeistSpinner } from '@/components/GeistUI';
 export default function Index() {
   const { user, loading } = useUserContext();
 
-  // While the persisted session is being loaded from SecureStore, show a spinner
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
-        <Image 
+        <Image
           source={require('@/assets/images/splash-icon.png')}
           style={{ width: 76, height: 76, marginBottom: 32 }}
           resizeMode="contain"
@@ -26,3 +25,4 @@ export default function Index() {
 
   return <Redirect href="/auth" />;
 }
+

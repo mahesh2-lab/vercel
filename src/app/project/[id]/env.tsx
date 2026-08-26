@@ -13,7 +13,7 @@ export default function EnvScreen() {
 
   const [variables, setVariables] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     async function fetchEnvs() {
       try {
@@ -55,7 +55,7 @@ export default function EnvScreen() {
         <View style={styles.formGrid}>
           <View style={styles.formCol}>
             <GeistText weight="500" style={{ fontSize: 14, marginBottom: 8 }}>Key</GeistText>
-            <TextInput 
+            <TextInput
               placeholder="e.g. NEXT_PUBLIC_API_URL"
               placeholderTextColor={theme.textSecondary + '80'}
               value={newKey}
@@ -67,7 +67,7 @@ export default function EnvScreen() {
           <View style={styles.formCol}>
             <GeistText weight="500" style={{ fontSize: 14, marginBottom: 8 }}>Value</GeistText>
             <View style={{ position: 'relative', justifyContent: 'center' }}>
-              <TextInput 
+              <TextInput
                 placeholder="e.g. https://api.example.com"
                 placeholderTextColor={theme.textSecondary + '80'}
                 value={newValue}
@@ -76,7 +76,7 @@ export default function EnvScreen() {
                 style={[styles.input, { borderColor: theme.border, color: theme.text, paddingRight: 40 }]}
                 autoCapitalize="none"
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={{ position: 'absolute', right: 12 }}
                 onPress={() => setShowNewValue(!showNewValue)}
               >
@@ -86,7 +86,7 @@ export default function EnvScreen() {
           </View>
         </View>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 }}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.saveBtn, { backgroundColor: theme.text }]}
             onPress={handleAdd}
           >
@@ -104,7 +104,7 @@ export default function EnvScreen() {
             <GeistText secondary style={{ fontSize: 14 }}>{showValues ? 'Hide Values' : 'Reveal Values'}</GeistText>
           </TouchableOpacity>
         </View>
-        
+
         {loading ? (
           <View style={{ padding: 40, alignItems: 'center' }}>
             <GeistSpinner size={36} color={theme.text} />
@@ -124,7 +124,7 @@ export default function EnvScreen() {
                     <GeistText secondary mono={showValues} style={{ fontSize: 14, letterSpacing: showValues ? 0 : 2 }}>{showValues ? v.value : '••••••••••••••••••••••••'}</GeistText>
                   </View>
                 </View>
-                
+
                 <View style={{ flexDirection: 'row', gap: 8 }}>
                   <TouchableOpacity style={styles.actionIconBtn}>
                     <Edit2 size={18} color={theme.textSecondary} />
@@ -141,5 +141,4 @@ export default function EnvScreen() {
     </ScrollView>
   );
 }
-
 
